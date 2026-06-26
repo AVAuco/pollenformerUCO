@@ -52,8 +52,9 @@ In the demo you can:
 - 🔥 Overlay the model's **attention map** to see *which* morphological regions drove the decision.
 - 🗺️ Explore the learned **embedding space** via a 2-D projection of the gallery.
 
-> 📦 **Code and trained weights will be released upon publication.** This page and the live demo are
-> available now so reviewers can evaluate the model's behaviour end-to-end.
+> 📦 **The source code, trained model weights, and the dataset will be made publicly available after
+> acceptance of the paper.** This page and the live demo are available now so reviewers can evaluate
+> the model's behaviour end-to-end.
 
 ---
 
@@ -154,7 +155,7 @@ A large, curated collection of **48,950** microscopy images spanning **17 pollen
 
 </div>
 
-> 🔒 The UCOPollen dataset is **not publicly released at this stage**.
+> 🔒 The UCOPollen dataset will be made **publicly available after acceptance of the paper**.
 
 ---
 
@@ -177,10 +178,10 @@ biologically meaningful structures such as the **exine** and surface **ornamenta
 
 ---
 
-## 📦 Code & weights
+## 📦 Code, weights & dataset
 
-Training code, environment specifications, and trained model weights will be released in this
-repository **upon publication**, to support full reproducibility of the experiments. Until then, the
+The **source code, trained model weights, and the UCOPollen dataset will be made publicly available
+after acceptance of the paper**, to support full reproducibility of the experiments. Until then, the
 **[live demo](https://richardesp-pollenformer-uco-demo.hf.space/)** lets you exercise the trained
 model directly in the browser.
 
