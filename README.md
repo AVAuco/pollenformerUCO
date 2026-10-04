@@ -13,8 +13,8 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c?logo=pytorch&logoColor=white)
 ![Backbone](https://img.shields.io/badge/Backbone-DINOv2--ViT--B-264796)
 ![Inference](https://img.shields.io/badge/Inference-Softmax_%7C_k--NN-264796)
-![Test Acc](https://img.shields.io/badge/Test_Accuracy-97.7%25-2ea44f)
-![Macro F1](https://img.shields.io/badge/Macro--F1-96.7%25-2ea44f)
+![Test Acc](https://img.shields.io/badge/Test_Accuracy-98.1%25-2ea44f)
+![Macro F1](https://img.shields.io/badge/Macro--F1-97.5%25-2ea44f)
 
 <br/>
 
@@ -26,7 +26,7 @@
 
 <img src="static/pollen_attention_head7.gif" alt="PollenFormerUCO attention rollout over a pollen grain" width="440"/>
 
-<sub><b>PollenFormerUCO</b> attends to biologically relevant regions — the <i>exine</i> and ornamentation patterns.<br/>Last-layer self-attention, head&nbsp;7.</sub>
+<sub><b>PollenFormerUCO</b> last-layer self-attention, head&nbsp;7 (qualitative visualisation).</sub>
 
 </div>
 
@@ -49,7 +49,7 @@ In the demo you can:
 - 🖼️ **Upload a microscopy image** (JPG / PNG / WEBP / BMP) or pick a bundled sample.
 - 🏷️ Get the **predicted pollen taxon** with a confidence indicator.
 - 🤝 Inspect the **top-k nearest neighbours** (with cosine similarity) used for k-NN inference.
-- 🔥 Overlay the model's **attention map** to see *which* morphological regions drove the decision.
+- 🔥 Overlay the model's **attention map** as a qualitative visualisation.
 - 🗺️ Explore the learned **embedding space** via a 2-D projection of the gallery.
 
 > 📦 **The source code, trained model weights, and the dataset will be made publicly available after
@@ -62,39 +62,41 @@ In the demo you can:
 
 - **Problem.** Automatic pollen identification underpins aerobiology, environmental monitoring, and
   allergy forecasting — but manual microscopy is slow and error-prone.
-- **Method.** We benchmark several **Vision Transformer** backbones against a CNN baseline under
-  identical training. The best model, **PollenFormerUCO** (DINOv2-ViT-B), is fine-tuned with a
-  **hybrid Cross-Entropy + Triplet** objective that projects the CLS token into a compact **128-D
-  embedding**, classified either by a **softmax head** or by **k-nearest-neighbours**.
-- **Results.** **97.7% test accuracy / 96.7% macro-F1** (1-NN on 128-D), **97.4% / 96.6%** (softmax)
-  across **17 pollen taxa + a NoPollen class**.
-- **Why it matters.** Metric learning yields compact, well-separated embeddings on which simple,
-  non-parametric k-NN generalizes to held-out data **without retraining**, and attention maps confirm
-  the model focuses on biologically meaningful structures.
+- **Method.** We benchmark **eleven backbones** spanning CNN, hybrid-attention and self-supervised
+  Vision Transformer families: frozen linear probing first, then full fine-tuning of the strongest
+  model of each family under an **identical budget**. **PollenFormerUCO** (DINOv2-ViT-B) is
+  fine-tuned with a **hybrid Cross-Entropy + Triplet** objective that projects the CLS token into a
+  compact **128-D embedding**, read by a **softmax head** or by **cosine nearest-neighbour** search.
+- **Results.** **98.1% test accuracy / 97.5% macro-F1** (cosine 1-NN on 128-D), **97.7% / 97.1%**
+  (softmax) across **17 pollen taxa + a NoPollen class**.
+- **Why it matters.** Under equal-budget fine-tuning the **training regime, not the architecture**,
+  governs closed-set performance, and the compact embedding lets **unseen taxa be added to a
+  reference gallery without retraining**.
 
 <details>
 <summary><b>📄 Read the full abstract</b></summary>
 
-> Automatic identification of pollen grains is essential for applications in aerobiology,
-> environmental monitoring, and allergy forecasting. Traditional microscopic analysis is
-> labor-intensive and prone to human error, while recent advances in Deep Learning have shown strong
-> potential for reliable pollen recognition. In this study, several Vision Transformer (ViT)
-> architectures are evaluated on a large curated data set from the University of Córdoba (UCO)
-> comprising 48,950 images from 17 pollen taxa and one negative class (NoPollen). Beyond standard
-> classification with Cross-Entropy, a hybrid loss function combining Cross-Entropy and Triplet loss
-> is introduced to encourage compact and discriminative feature embeddings. The best model,
-> PollenFormerUCO, based on a DINOv2-ViT Base backbone, achieved 97.4% test accuracy and a macro-F1
-> of 96.6% with the softmax head, and 97.7% test accuracy and a macro-F1 of 96.7% via inference k
-> closest neighbor on a compact 128-dimensional embedding. In particular, even lightweight ViT
-> architectures (e.g., MobileViT) surpassed a ResNet18 baseline with half the size, confirming that
-> Vision Transformers provide more discriminative representations for pollen morphology under
-> identical training conditions. Beyond closed-set classification, the hybrid objective structured
-> embeddings into a compact and well-separated low-dimensional space, where simple non-parametric
-> algorithms such as k-nearest neighbors (k-NN) generalized to the held-out test set without
-> retraining. Attention maps further confirmed that PollenFormerUCO focuses on biologically relevant
-> regions such as the exine and ornamentation patterns. These results show that Vision Transformers,
-> combined with metric learning, provide a powerful framework for pollen classification and support
-> future transfer of these capabilities to smaller models with reduced computational requirements.
+> Automatic pollen identification is critical for aerobiology, environmental monitoring and allergy
+> forecasting. We introduce UCOPollen, a 48,950-image dataset covering 17 pollen taxa and one negative
+> class, and benchmark eleven backbones spanning convolutional (CNN), hybrid-attention and
+> self-supervised Vision Transformer (ViT) families. Phase I compares frozen representations by linear
+> probing. Phase II fully fine-tunes the strongest model from each family under an equal budget to test
+> whether that ranking persists when optimisation is controlled. Phase II-B adds a hybrid
+> Cross-Entropy–Triplet objective and compact projection to select a model for closed-set
+> classification and gallery-based recognition of unseen taxa without retraining. Phase III, a post hoc
+> analysis on a date-disjoint partition, tests robustness to held-out acquisition dates. Frozen probing
+> yields a macro-F1 range (0.668–0.832), led by DINOv2-ViT Base; after equal-budget fine-tuning, the
+> spread collapses to 0.0043 and no pairwise difference is detectable (corrected p ≥ 0.247). Thus,
+> training regime rather than architecture governs closed-set performance. We introduce
+> PollenFormerUCO, the DINOv2-ViT Base hybrid configuration (d = 128, λ = 0.5), with backbone
+> parameters trainable under differential learning rates. It reaches 98.1% accuracy and 97.5% macro-F1
+> using cosine 1-nearest-neighbour (1-NN) inference on a 128-dimensional embedding. Gallery extension
+> lets seven unseen taxa be added and queried without retraining; we evaluate out-of-distribution
+> material. Phase III (96.1% accuracy and 88.6% macro-F1 over 17 classes), repeated runs and a
+> cross-entropy control delimit these claims and indicate that retrieval capability derives from the
+> projection head, not uniquely from the triplet term. The dataset, trained weights, code and online
+> demo will be available through the project repository:
+> [github.com/AVAuco/pollenformerUCO](https://github.com/AVAuco/pollenformerUCO).
 
 </details>
 
@@ -106,14 +108,18 @@ In the demo you can:
 
 | Inference method | Test Accuracy | Macro-F1 |
 |---|:---:|:---:|
-| Softmax head | 97.4% | 96.6% |
-| **1-NN (128-D embedding)** | **97.7%** | **96.7%** |
+| Softmax head | 97.7% | 97.1% |
+| **Cosine 1-NN (128-D embedding)** | **98.1%** | **97.5%** |
 
-- 🏆 **Transformers beat the CNN baseline.** Every ViT backbone outperformed a ResNet18 under
-  identical training conditions.
-- 🪶 **Efficiency.** Even a lightweight **MobileViT-S** surpassed ResNet18 at roughly **half the size**.
-- 🧲 **Structured embeddings.** The hybrid objective produces compact, well-separated clusters, so
-  non-parametric **k-NN generalizes without retraining**.
+- ⚖️ **Training regime, not architecture.** Under frozen probing the eleven backbones span 0.1641
+  macro-F1; after equal-budget full fine-tuning the spread collapses to 0.0043 and no pairwise
+  difference is detectable.
+- 🏆 **DINOv2 under the hybrid objective.** Its softmax head is significantly more accurate than
+  ConvNeXt-Base and DaViT-Small trained under the same objective (McNemar p = 1.0×10⁻³ and
+  4.2×10⁻⁴), and its 1-NN readout gives the highest macro-F1 of the study.
+- 🧲 **Queryable embeddings.** The learned 128-D projection is markedly better separated than the
+  768-D CLS token (test silhouette 0.617 → 0.809), so a parameter-free nearest-neighbour rule matches
+  the trained head and **new taxa can be added to the gallery without retraining**.
 
 <div align="center">
 <img src="static/cm_ce_vs_hybrid.png" alt="Confusion matrices: Cross-Entropy vs. hybrid CE+Triplet" width="92%"/><br/>
@@ -173,8 +179,9 @@ CE + Triplet objective; the class-centroid view summarizes inter-class separatio
 <sub>Class-centroid structure in the learned 128-D embedding space.</sub>
 </div>
 
-Attention maps (see the animation at the top) further confirm that PollenFormerUCO concentrates on
-biologically meaningful structures such as the **exine** and surface **ornamentation**.
+The UMAP projections and the attention animation at the top are qualitative visualisations only;
+every quantitative claim about the embedding rests on separability indices and nearest-neighbour
+accuracy computed in the full 128-D space.
 
 ---
 
