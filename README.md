@@ -7,7 +7,7 @@
 #### A systematic backbone benchmark on **UCOPollen**
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Hugging_Face_Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://richardesp-pollenformer-uco-demo.hf.space/)
-[![Paper](https://img.shields.io/badge/Paper-Under_Review-9cf?style=for-the-badge)](#-citation)
+[![Paper](https://img.shields.io/badge/Paper-Atmospheric_Environment-9cf?style=for-the-badge)](https://doi.org/10.1016/j.atmosenv.2026.122455)
 [![License](https://img.shields.io/badge/License-MIT-3da639?style=for-the-badge)](#-license)
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
@@ -23,21 +23,17 @@
   <img src="https://img.shields.io/badge/▶%20%20Try%20the%20Live%20Demo-Open%20in%20Hugging%20Face%20Spaces-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Try the live demo" height="42">
 </a>
 
-<br/><br/>
-
-<img src="static/pollen_attention_head7.gif" alt="PollenFormerUCO attention rollout over a pollen grain" width="440"/>
-
-<sub><b>PollenFormerUCO</b> last-layer self-attention, head&nbsp;7 (qualitative visualisation).</sub>
-
 </div>
 
 ---
 
-## 🔬 Reviewers — start here
+## 🔬 Paper & live demo
 
-This repository accompanies the manuscript _“Vision Transformers for Pollen Grains Classification:
-A Systematic Backbone Benchmark on UCOPollen”_ (under review). To make the work easy to assess, a
-**fully interactive live demo of the trained model is already online** — no installation, no setup:
+This repository accompanies _“Vision Transformers for pollen grains classification: A systematic backbone benchmark on UCOPollen”_, accepted in
+**Atmospheric Environment**, volume **389**, article **122455** (2027).
+[Read the paper](https://doi.org/10.1016/j.atmosenv.2026.122455).
+
+A **fully interactive live demo of the trained model is online** — no installation, no setup:
 
 <div align="center">
 
@@ -50,92 +46,35 @@ In the demo you can:
 - 🖼️ **Upload a microscopy image** (JPG / PNG / WEBP / BMP) or pick a bundled sample.
 - 🏷️ Get the **predicted pollen taxon** with a confidence indicator.
 - 🤝 Inspect the **top-k nearest neighbours** (with cosine similarity) used for k-NN inference.
-- 🔥 Overlay the model's **attention map** as a qualitative visualisation.
-- 🗺️ Explore the learned **embedding space** via a 2-D projection of the gallery.
 
-> 📦 **The source code, trained model weights, and the dataset will be made publicly available after
-> acceptance of the paper.** This page and the live demo are available now so reviewers can evaluate
-> the model's behaviour end-to-end.
+> 📦 **The demo source code, trained weights, and reference gallery are available in the
+> [Hugging Face Space repository](https://huggingface.co/spaces/richardesp/pollenformer-uco-demo/tree/main).**
+> Publication of the UCOPollen dataset and the full experimental code is pending.
 
 ---
 
-## 🧩 TL;DR
+## 🧩 What this project offers
 
-- **Problem.** Automatic pollen identification underpins aerobiology, environmental monitoring, and
-  allergy forecasting — but manual microscopy is slow and error-prone.
-- **Method.** We benchmark **eleven backbones** spanning CNN, hybrid-attention and self-supervised
-  Vision Transformer families: frozen linear probing first, then full fine-tuning of the strongest
-  model of each family under an **identical budget**. **PollenFormerUCO** (DINOv2-ViT-B) is
-  fine-tuned with a **hybrid Cross-Entropy + Triplet** objective that projects the CLS token into a
-  compact **128-D embedding**, read by a **softmax head** or by **cosine nearest-neighbour** search.
-- **Results.** **98.1% test accuracy / 97.5% macro-F1** (cosine 1-NN on 128-D), **97.7% / 97.1%**
-  (softmax) across **17 pollen taxa + a NoPollen class**.
-- **Why it matters.** Under equal-budget fine-tuning the **training regime, not the architecture**,
-  governs closed-set performance, and the compact embedding lets **unseen taxa be added to a
-  reference gallery without retraining**.
-
-<details>
-<summary><b>📄 Read the full abstract</b></summary>
-
-> Automatic pollen identification is critical for aerobiology, environmental monitoring and allergy
-> forecasting. We introduce UCOPollen, a 48,950-image dataset covering 17 pollen taxa and one negative
-> class, and benchmark eleven backbones spanning convolutional (CNN), hybrid-attention and
-> self-supervised Vision Transformer (ViT) families. Phase I compares frozen representations by linear
-> probing. Phase II fully fine-tunes the strongest model from each family under an equal budget to test
-> whether that ranking persists when optimisation is controlled. Phase II-B adds a hybrid
-> Cross-Entropy–Triplet objective and compact projection to select a model for closed-set
-> classification and gallery-based recognition of unseen taxa without retraining. Phase III, a post hoc
-> analysis on a date-disjoint partition, tests robustness to held-out acquisition dates. Frozen probing
-> yields a macro-F1 range (0.668–0.832), led by DINOv2-ViT Base; after equal-budget fine-tuning, the
-> spread collapses to 0.0043 and no pairwise difference is detectable (corrected p ≥ 0.247). Thus,
-> training regime rather than architecture governs closed-set performance. We introduce
-> PollenFormerUCO, the DINOv2-ViT Base hybrid configuration (d = 128, λ = 0.5), with backbone
-> parameters trainable under differential learning rates. It reaches 98.1% accuracy and 97.5% macro-F1
-> using cosine 1-nearest-neighbour (1-NN) inference on a 128-dimensional embedding. Gallery extension
-> lets seven unseen taxa be added and queried without retraining; we evaluate out-of-distribution
-> material. Phase III (96.1% accuracy and 88.6% macro-F1 over 17 classes), repeated runs and a
-> cross-entropy control delimit these claims and indicate that retrieval capability derives from the
-> projection head, not uniquely from the triplet term. The dataset, trained weights, code and online
-> demo will be available through the project repository:
-> [github.com/AVAuco/pollenformerUCO](https://github.com/AVAuco/pollenformerUCO).
-
-</details>
-
----
-
-## ✨ Results at a glance
-
-**PollenFormerUCO** — test-set generalization (UCOPollen v1.0):
-
-| Inference method                  | Test Accuracy | Macro-F1  |
-| --------------------------------- | :-----------: | :-------: |
-| Softmax head                      |     97.7%     |   97.1%   |
-| **Cosine 1-NN (128-D embedding)** |   **98.1%**   | **97.5%** |
-
-- ⚖️ **Training regime, not architecture.** Under frozen probing the eleven backbones span 0.1641
-  macro-F1; after equal-budget full fine-tuning the spread collapses to 0.0043 and no pairwise
-  difference is detectable.
-- 🏆 **DINOv2 under the hybrid objective.** Its softmax head is significantly more accurate than
-  ConvNeXt-Base and DaViT-Small trained under the same objective (McNemar p = 1.0×10⁻³ and
-  4.2×10⁻⁴), and its 1-NN readout gives the highest macro-F1 of the study.
-- 🧲 **Queryable embeddings.** The learned 128-D projection is markedly better separated than the
-  768-D CLS token (test silhouette 0.617 → 0.809), so a parameter-free nearest-neighbour rule matches
-  the trained head and **new taxa can be added to the gallery without retraining**.
-
-<div align="center">
-<img src="static/cm_ce_vs_hybrid.png" alt="Confusion matrices: Cross-Entropy vs. hybrid CE+Triplet" width="92%"/><br/>
-<sub>Confusion matrices on the held-out set — Cross-Entropy (left) vs. hybrid CE + Triplet (right).</sub>
-</div>
+- **UCOPollen:** 48,950 expert-annotated microscopy images covering 17 pollen taxa and a NoPollen class.
+- **PollenFormerUCO:** a fine-tuned DINOv2-ViT Base model for classification and reference-image retrieval
+  through a compact 128-D embedding.
+- **A controlled benchmark:** eleven backbones compared across training regimes. The
+  [paper](https://doi.org/10.1016/j.atmosenv.2026.122455) reports the experiments, statistical
+  comparisons and detailed analysis.
 
 ---
 
 ## 🧠 Method & architecture
 
-PollenFormerUCO pairs a self-supervised **DINOv2-ViT Base** backbone with a lightweight linear
-projection (768 → **128-D**) trained under a **hybrid Cross-Entropy + Triplet** objective. At
-inference, a query embedding is classified either by the **softmax head** or by **cosine k-NN** over
-a gallery of training embeddings — the latter requires no extra training and exposes interpretable
-nearest neighbours.
+PollenFormerUCO fine-tunes a self-supervised **DINOv2-ViT Base** backbone with a linear
+projection (768 → **128-D**) under a **hybrid Cross-Entropy + Triplet** objective.
+
+**Microscopy image → DINOv2 backbone → 128-D embedding → cosine nearest neighbours → pollen taxon.**
+
+The deployed model compares each query with a gallery of labelled reference embeddings and returns
+both a prediction and the closest reference images. A **softmax head** provides an alternative
+readout for the original training classes. New taxa can be introduced by adding labelled examples
+to the gallery without retraining the model; the paper evaluates this on seven previously unseen taxa.
 
 <div align="center">
 <img src="static/architecture_diagram_v2.png" alt="PollenFormerUCO architecture: DINOv2-ViT-B backbone, 128-D projection, metric space, k-NN inference" width="92%"/>
@@ -145,12 +84,32 @@ nearest neighbours.
 
 ## 📊 Dataset — UCOPollen v1.0
 
-A large, curated collection of **48,950** microscopy images spanning **17 pollen taxa** plus a
-**NoPollen** negative class, split in a stratified **70 / 15 / 15** train / val / test partition.
+UCOPollen contains **48,950 expert-annotated microscopy images** spanning **17 pollen taxa** plus a
+**NoPollen** negative class, provided by the Department of Botany, Ecology and Plant Physiology at
+the University of Córdoba. Images were acquired with a **BAA502 (POMO) automatic bioaerosol analyser**.
+The stratified **70 / 15 / 15** train / validation / test split contains **34,257 / 7,335 / 7,358 images**.
 
 <div align="center">
-<img src="static/dataset_distribution.png" alt="UCOPollen class distribution" width="80%"/>
+<a href="static/dataset_acquisition.pdf">
+  <img src="static/dataset_acquisition.png" alt="UCOPollen composition and acquisition metadata: per-class train, validation and test counts, example images, acquisition-date counts, timestamp coverage, and concentration on the largest acquisition date" width="100%"/>
+</a>
+<br/>
+<sub>UCOPollen composition and acquisition concentration. Click the figure to open the vector PDF.</sub>
 </div>
+
+**Reading the figure.** Classes are ordered by image count. **(a)** Train, validation and test
+counts, one representative image per class, and the number of distinct acquisition dates;
+the NoPollen bar is broken at 5,500 images and labels its full total of 7,403.
+**(b)** Percentage of each class with a recovered acquisition timestamp.
+**(c)** Percentage of dated images contributed by the largest single acquisition date;
+outlined bars indicate classes with less than 30% timestamp coverage.
+
+Acquisition timestamps are available for **65.9%** of the images. The stratified split shares
+acquisition dates across subsets, although no image appears in more than one subset. The paper
+therefore includes a separate **date-disjoint evaluation (Phase III)** to assess robustness to
+held-out acquisition dates.
+
+<sub>Figure reproduced from the <a href="https://doi.org/10.1016/j.atmosenv.2026.122455">paper by Espantaleón-Pérez et al.</a>, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>.</sub>
 
 <div align="center">
 
@@ -162,36 +121,62 @@ A large, curated collection of **48,950** microscopy images spanning **17 pollen
 
 </div>
 
-> 🔒 The UCOPollen dataset will be made **publicly available after acceptance of the paper**.
+> 🔒 Public release of the UCOPollen dataset is pending. Its download link will be added here when available.
 
 ---
 
-## 🔍 Explainability
+## ✨ Results at a glance
 
-The hybrid objective reshapes the feature space into compact, well-separated clusters. The UMAP
-projections below contrast the embeddings learned with plain Cross-Entropy versus the hybrid
-CE + Triplet objective; the class-centroid view summarizes inter-class separation.
+**PollenFormerUCO on the stratified UCOPollen test split** (17 pollen taxa + NoPollen):
 
-<div align="center">
-<img src="static/umap_ce_vs_hybrid.png" alt="UMAP of embeddings: Cross-Entropy vs. hybrid CE+Triplet" width="92%"/><br/>
-<sub>UMAP of validation embeddings — Cross-Entropy (left) vs. hybrid CE + Triplet (right).</sub>
-<br/><br/>
-<img src="static/class_centroids.png" alt="Per-class centroid relationships in the learned embedding space" width="92%"/><br/>
-<sub>Class-centroid structure in the learned 128-D embedding space.</sub>
-</div>
+| Inference method                  | Test accuracy | Macro-F1  |
+| --------------------------------- | :-----------: | :-------: |
+| Softmax head                      |     97.7%     |   97.1%   |
+| **Cosine 1-NN (128-D embedding)** |   **98.1%**   | **97.5%** |
 
-The UMAP projections and the attention animation at the top are qualitative visualisations only;
-every quantitative claim about the embedding rests on separability indices and nearest-neighbour
-accuracy computed in the full 128-D space.
+These results describe the image-level split. The separate, post hoc date-disjoint evaluation
+reports **96.1% accuracy / 88.6% macro-F1 over 17 classes**, using the subset with acquisition
+metadata and excluding Casuarina. See the [paper](https://doi.org/10.1016/j.atmosenv.2026.122455)
+for protocols, per-class results, ablations and statistical comparisons.
+
+---
+
+## ⚖️ Strengths & limitations
+
+### Strengths
+
+- **Expert-labelled reference data.** A curated dataset with class examples, fixed evaluation splits
+  and recovered acquisition metadata supports benchmarking for Mediterranean pollen recognition.
+- **Compact, reusable representation.** A 128-D embedding supports classification and retrieval
+  of reference images with a simple cosine nearest-neighbour rule.
+- **Gallery extension.** Labelled examples can add new taxa without retraining; the study demonstrates
+  this capability for morphologically distinctive taxa on the same imaging device.
+
+### Limitations
+
+- **External validation is still needed.** Data come from one institution and one imaging device.
+  Performance across devices, regions and acquisition conditions has not been established.
+- **Acquisition context and class imbalance matter.** The image-level split shares acquisition dates
+  across subsets; timestamps cover only 65.9% of images. Rare and morphologically similar taxa
+  remain challenging, and the date-disjoint analysis does not cover the full dataset.
+- **Unknown-class rejection is not calibrated.** Unseen taxa similar to known classes can receive
+  confident incorrect assignments. Gallery-extension experiments are small and preliminary;
+  reliable unattended operation requires further validation and a dedicated rejection mechanism.
+
+For the supporting evidence and full discussion, read the
+[paper](https://doi.org/10.1016/j.atmosenv.2026.122455).
 
 ---
 
 ## 📦 Code, weights & dataset
 
-The **source code, trained model weights, and the UCOPollen dataset will be made publicly available
-after acceptance of the paper**, to support full reproducibility of the experiments. Until then, the
-**[live demo](https://richardesp-pollenformer-uco-demo.hf.space/)** lets you exercise the trained
+The [Hugging Face Space repository](https://huggingface.co/spaces/richardesp/pollenformer-uco-demo/tree/main)
+contains the demo source code, [trained model weights and reference gallery](https://huggingface.co/spaces/richardesp/pollenformer-uco-demo/tree/main/models).
+The **[live demo](https://richardesp-pollenformer-uco-demo.hf.space/)** lets you exercise the trained
 model directly in the browser.
+
+Public release of the **UCOPollen dataset and the full experimental code** is pending.
+Links will be added to this repository when available.
 
 ---
 
@@ -218,7 +203,16 @@ the [paper](https://doi.org/10.1016/j.atmosenv.2026.122455):
 
 ## 👥 Authors
 
-Author and affiliation details are **withheld during peer review** and will be added upon acceptance.
+Ricardo Espantaleón-Pérez<sup>1</sup>, Qasim Farooq<sup>4,5</sup>,
+Rocío López-Orozco<sup>4,5</sup>, Mónica González-Alonso<sup>3</sup>,
+Samer Alashhab<sup>3</sup>, Jose Oteros<sup>4,5</sup>, Jeroen Buters<sup>3</sup>,
+Carmen Galán<sup>4,5</sup>, and Manuel J. Marín-Jiménez<sup>1,2</sup>.
+
+1. Department of Computer Science and Artificial Intelligence, University of Córdoba (UCO), Córdoba, Spain.
+2. Maimonides Institute for Biomedical Research of Córdoba (IMIBIC), Córdoba, Spain.
+3. Center of Allergy & Environment (ZAUM), Member of the German Center for Lung Research (DZL), Technische Universität München/Helmholtz Center, Munich, Germany.
+4. Department of Botany, Ecology and Plant Physiology, Agrifood Campus of International Excellence (ceiA3), University of Córdoba, Rabanales Campus, Celestino Mutis Building, Córdoba, Spain.
+5. Andalusian Inter-University Institute for Earth System Research (IISTA), University of Córdoba, Córdoba, Spain.
 
 ---
 
