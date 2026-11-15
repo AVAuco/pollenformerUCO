@@ -1,0 +1,20 @@
+# YAML rules (https://yamllint.readthedocs.io/en/stable/rules.html), aligned with Prettier's output.
+extends: default
+ignore: |
+  .git/
+rules:
+  # GitHub workflows and CITATION.cff do not start with `---`.
+  document-start: disable
+  # Prettier formats flow mappings as `{ a: 1 }` and leaves one space before inline comments.
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  comments:
+    min-spaces-from-content: 1
+  # Long URLs and DOIs cannot be wrapped.
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+  # `on:` is the GitHub Actions trigger key, not a boolean.
+  truthy:
+    check-keys: false

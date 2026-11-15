@@ -1,0 +1,12 @@
+# Monthly PRs that bump the pinned actions. The `ci:` prefix keeps their titles valid for pr-title.yml.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns: ["*"]

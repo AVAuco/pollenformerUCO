@@ -1,0 +1,12 @@
+# Markdown rules (https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md). Prettier handles the layout.
+config:
+  default: true
+  # Prose is wrapped by hand (Prettier proseWrap: preserve) and badge/link lines are long by nature.
+  MD013: false
+  # The README opens with a centred <div> hero (logo, title, badges) rather than a bare `# Title`.
+  MD041: false
+  # Inside that hero, the subtitle lines are h3/h4 under the h1 title; every other heading keeps the hierarchy.
+  MD001: false
+  # Inline HTML is limited to what the README uses: centred hero, badges, collapsible sections, affiliations.
+  MD033:
+    allowed_elements: [a, b, br, details, div, img, p, sub, summary, sup]

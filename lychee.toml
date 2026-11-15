@@ -1,0 +1,6 @@
+# lychee settings (https://lychee.cli.rs/usage/config/), read by .github/workflows/links.yml.
+# ScienceDirect answers 403 to every bot; the paper itself is still checked through its DOI link.
+exclude = ["^https://www\\.sciencedirect\\.com/"]
+# A rate limit is not a dead link.
+accept = ["200..=299", "429"]
+max_retries = 3
