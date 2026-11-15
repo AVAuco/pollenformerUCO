@@ -1,0 +1,28 @@
+# Dead links in the README (paper DOI, demo, dataset) are caught here instead of by readers.
+# Network checks are flaky by nature, so they run outside pre-commit: on PRs that touch docs and weekly.
+name: Links
+
+on:
+  pull_request:
+    paths: ["**/*.md", "CITATION.cff", "lychee.toml"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lychee:
+    name: lychee
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          # Pinned rather than the action's default, so the check does not change under a Dependabot bump.
+          lycheeVersion: v0.24.2
+          args: --no-progress README.md CITATION.cff

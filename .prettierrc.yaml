@@ -1,0 +1,6 @@
+# Prettier owns the layout of Markdown and YAML. Prose is never re-wrapped: line breaks stay where the author put them.
+proseWrap: preserve
+overrides:
+  - files: "*.cff"
+    options:
+      parser: yaml

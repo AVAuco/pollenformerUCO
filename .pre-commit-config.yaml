@@ -1,0 +1,59 @@
+# `uvx --python 3.13 pre-commit@4.7.0 install` once: the hooks then format and validate staged files on commit.
+# CI runs the same hooks on every file with the same versions (.github/workflows/lint.yml): keep both in sync.
+# Each tool reads its own config file (.prettierrc.yaml, .markdownlint-cli2.yaml, .yamllint.yaml):
+# no hook adds its own rules.
+minimum_pre_commit_version: "4.7.0"
+default_language_version:
+  # pre-commit downloads this Node for Prettier and markdownlint instead of using whatever is installed.
+  node: "24.22.2"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: check-added-large-files
+        # The README GIFs in static/ weigh up to 5.3 MB.
+        args: ["--maxkb=6000"]
+      - id: no-commit-to-branch
+        # main only changes through squash-merged PRs.
+        args: ["--branch", "main"]
+
+  # Formatter for Markdown, YAML and CITATION.cff (parsed as YAML through .prettierrc.yaml).
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        entry: prettier --write --ignore-unknown
+        language: node
+        additional_dependencies: ["prettier@3.9.10"]
+        files: \.(md|ya?ml|cff)$
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.24.0
+    hooks:
+      - id: markdownlint-cli2
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+        args: ["--strict"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+
+  # Schema validation: CITATION.cff against the official CFF 1.2.0 schema, and the GitHub config files.
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.39.0
+    hooks:
+      - id: check-citation-file-format
+      - id: check-github-workflows
+      - id: check-dependabot

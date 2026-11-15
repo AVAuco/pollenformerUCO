@@ -1,0 +1,24 @@
+# With squash and merge, the PR title becomes the commit message on main: keep it a Conventional Commit.
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-commit:
+    name: Conventional Commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # e.g. "docs: add citation for the published paper", not "Docs: Add citation".
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: >
+            The subject "{subject}" of the PR title "{title}" must start with a lowercase letter.
