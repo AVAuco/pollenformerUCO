@@ -3,6 +3,7 @@
 # 🌾 PollenFormerUCO
 
 ### Vision Transformers for Pollen Grain Classification
+
 #### A systematic backbone benchmark on **UCOPollen**
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Hugging_Face_Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://richardesp-pollenformer-uco-demo.hf.space/)
@@ -34,8 +35,8 @@
 
 ## 🔬 Reviewers — start here
 
-This repository accompanies the manuscript *“Vision Transformers for Pollen Grains Classification:
-A Systematic Backbone Benchmark on UCOPollen”* (under review). To make the work easy to assess, a
+This repository accompanies the manuscript _“Vision Transformers for Pollen Grains Classification:
+A Systematic Backbone Benchmark on UCOPollen”_ (under review). To make the work easy to assess, a
 **fully interactive live demo of the trained model is already online** — no installation, no setup:
 
 <div align="center">
@@ -106,10 +107,10 @@ In the demo you can:
 
 **PollenFormerUCO** — test-set generalization (UCOPollen v1.0):
 
-| Inference method | Test Accuracy | Macro-F1 |
-|---|:---:|:---:|
-| Softmax head | 97.7% | 97.1% |
-| **Cosine 1-NN (128-D embedding)** | **98.1%** | **97.5%** |
+| Inference method                  | Test Accuracy | Macro-F1  |
+| --------------------------------- | :-----------: | :-------: |
+| Softmax head                      |     97.7%     |   97.1%   |
+| **Cosine 1-NN (128-D embedding)** |   **98.1%**   | **97.5%** |
 
 - ⚖️ **Training regime, not architecture.** Under frozen probing the eleven backbones span 0.1641
   macro-F1; after equal-budget full fine-tuning the spread collapses to 0.0043 and no pairwise
@@ -153,11 +154,11 @@ A large, curated collection of **48,950** microscopy images spanning **17 pollen
 
 <div align="center">
 
-| | | | | | |
-|---|---|---|---|---|---|
-| Brassicaceae | Castanea | Casuarina | Chenopodium | Cupressaceae | Fraxinus |
-| Morus | Olea | Pinus | Pistacia | Plantago | Platanus |
-| Poaceae | Populus | Quercus | Rumex | Urticaceae | *NoPollen* |
+|              |          |           |             |              |            |
+| ------------ | -------- | --------- | ----------- | ------------ | ---------- |
+| Brassicaceae | Castanea | Casuarina | Chenopodium | Cupressaceae | Fraxinus   |
+| Morus        | Olea     | Pinus     | Pistacia    | Plantago     | Platanus   |
+| Poaceae      | Populus  | Quercus   | Rumex       | Urticaceae   | _NoPollen_ |
 
 </div>
 
