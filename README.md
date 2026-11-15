@@ -196,15 +196,20 @@ model directly in the browser.
 
 ## 📚 Citation
 
-> The author list and venue are withheld during peer review and will be completed upon acceptance.
+If you use PollenFormerUCO, UCOPollen, or this benchmark in your research, please cite
+the [paper](https://doi.org/10.1016/j.atmosenv.2026.122455):
 
 ```bibtex
-@unpublished{pollenformeruco2026,
-  title  = {Vision Transformers for Pollen Grains Classification:
-            A Systematic Backbone Benchmark on UCOPollen},
-  author = {Author names withheld for peer review},
-  year   = {2026},
-  note   = {Manuscript under review. Full author list and venue added upon acceptance.}
+@article{EspantaleonPerez2027PollenFormerUCO,
+  author  = {Espantale{\'o}n-P{\'e}rez, Ricardo and Farooq, Qasim and L{\'o}pez-Orozco, Roc{\'i}o and Gonz{\'a}lez-Alonso, M{\'o}nica and Alashhab, Samer and Oteros, Jose and Buters, Jeroen and Gal{\'a}n, Carmen and Mar{\'i}n-Jim{\'e}nez, Manuel J.},
+  title   = {{Vision Transformers} for pollen grains classification: A systematic backbone benchmark on {UCOPollen}},
+  journal = {Atmospheric Environment},
+  volume  = {389},
+  pages   = {122455},
+  year    = {2027},
+  issn    = {1352-2310},
+  doi     = {10.1016/j.atmosenv.2026.122455},
+  url     = {https://www.sciencedirect.com/science/article/pii/S1352231026006850}
 }
 ```
 
