@@ -23,6 +23,14 @@
   <img src="https://img.shields.io/badge/▶%20%20Try%20the%20Live%20Demo-Open%20in%20Hugging%20Face%20Spaces-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Try the live demo" height="42">
 </a>
 
+<br/><br/>
+
+<a href="static/pollenformer_abstract_poster.png">
+  <img src="static/pollenformer_abstract.gif" alt="Graphical abstract of PollenFormerUCO: the UCOPollen dataset, a benchmark of 11 backbones under two training regimes, DINOv2 with a 128-D projection, new taxa added without retraining, k-NN inference with attention maps, and the results (98.1% accuracy, 97.5% macro-F1)" width="100%"/>
+</a>
+
+<sub><b>Graphical abstract.</b> Click for the full-resolution poster.</sub>
+
 </div>
 
 ---
