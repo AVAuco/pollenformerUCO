@@ -2,6 +2,7 @@ cff-version: 1.2.0
 message: "If you use this work in your research, please cite the article in preferred-citation."
 type: software
 title: "PollenFormerUCO"
+license: MIT
 authors:
   - family-names: "Espantaleón-Pérez"
     given-names: "Ricardo"
@@ -52,3 +53,4 @@ preferred-citation:
   issn: "1352-2310"
   doi: "10.1016/j.atmosenv.2026.122455"
   url: "https://www.sciencedirect.com/science/article/pii/S1352231026006850"
+  license: CC-BY-NC-4.0
