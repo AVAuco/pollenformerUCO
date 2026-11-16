@@ -230,4 +230,13 @@ Carmen Galán<sup>4,5</sup>, and Manuel J. Marín-Jiménez<sup>1,2</sup>.
 
 ## 📄 License
 
-Released under the **MIT License**. A `LICENSE` file will accompany the code release.
+The source code of PollenFormerUCO is released under the [MIT License](LICENSE).
+
+The [article](https://doi.org/10.1016/j.atmosenv.2026.122455) is published open access under
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/); figures reproduced from it in this
+README are shared under the same license.
+
+Model weights and the UCOPollen dataset are subject to their respective licensing terms, documented
+alongside their releases.
+
+If you use this work in your research, please cite the [associated publication](#-citation).
