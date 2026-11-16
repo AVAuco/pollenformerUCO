@@ -55,9 +55,8 @@ In the demo you can:
 - 🏷️ Get the **predicted pollen taxon** with a confidence indicator.
 - 🤝 Inspect the **top-k nearest neighbours** (with cosine similarity) used for k-NN inference.
 
-> 📦 **The demo source code, trained weights, and reference gallery are available in the
-> [Hugging Face Space repository](https://huggingface.co/spaces/richardesp/pollenformer-uco-demo/tree/main).**
-> Publication of the UCOPollen dataset and the full experimental code is pending.
+> 📦 The Space hosts the online demo only. The code, trained weights and k-NN reference gallery will be
+> released through this repository: see [Code, weights & dataset](#-code-weights--dataset).
 
 ---
 
@@ -178,13 +177,18 @@ For the supporting evidence and full discussion, read the
 
 ## 📦 Code, weights & dataset
 
-The [Hugging Face Space repository](https://huggingface.co/spaces/richardesp/pollenformer-uco-demo/tree/main)
-contains the demo source code, [trained model weights and reference gallery](https://huggingface.co/spaces/richardesp/pollenformer-uco-demo/tree/main/models).
-The **[live demo](https://richardesp-pollenformer-uco-demo.hf.space/)** lets you exercise the trained
-model directly in the browser.
+This GitHub repository is the official home of PollenFormerUCO. The release is organised so that a
+researcher can clone the project and run a real prediction without training the model from scratch.
 
-Public release of the **UCOPollen dataset and the full experimental code** is pending.
-Links will be added to this repository when available.
+| Component                                                         | Where                                                                    | Status       |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------ |
+| Model, inference, training and evaluation code                    | This repository                                                          | ⏳ Pending   |
+| Trained weights                                                   | Versioned release                                                        | ⏳ Pending   |
+| k-NN reference gallery: embeddings, labels and code to rebuild it | Released with the weights                                                | ⏳ Pending   |
+| UCOPollen dataset                                                 | Released with its own license                                            | ⏳ Pending   |
+| Live demo                                                         | [Hugging Face Space](https://richardesp-pollenformer-uco-demo.hf.space/) | ✅ Available |
+
+Links will be added here as each component is released.
 
 ---
 
