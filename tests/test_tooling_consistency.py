@@ -18,9 +18,10 @@ from helpers import REPO_ROOT
 
 PRE_COMMIT = (REPO_ROOT / ".pre-commit-config.yaml").read_text(encoding="utf-8")
 DOCKERFILE = (REPO_ROOT / "demo" / "Dockerfile").read_text(encoding="utf-8")
-LINT_WORKFLOW = (REPO_ROOT / ".github" / "workflows" / "lint.yml").read_text(
-    encoding="utf-8"
-)
+WORKFLOWS = {
+    path.name: path.read_text(encoding="utf-8")
+    for path in sorted((REPO_ROOT / ".github" / "workflows").glob("*.yml"))
+}
 PYPROJECT = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 MISE = tomllib.loads((REPO_ROOT / "mise.toml").read_text(encoding="utf-8"))
 LOCK = tomllib.loads((REPO_ROOT / "uv.lock").read_text(encoding="utf-8"))
@@ -62,13 +63,28 @@ def test_python_is_the_same_in_the_project_and_the_image() -> None:
     )
 
 
-@pytest.mark.parametrize("key", ["PRE_COMMIT_VERSION", "PYTHON_VERSION"])
-def test_lint_workflow_matches_the_local_setup(key: str) -> None:
-    match = re.search(rf'{key}: "([\d.]+)"', LINT_WORKFLOW)
-    assert match, f"{key} is not set in lint.yml"
-    if key == "PRE_COMMIT_VERSION":
-        minimum = re.search(r'minimum_pre_commit_version: "([\d.]+)"', PRE_COMMIT)
-        assert minimum
-        assert match.group(1) == minimum.group(1)
-    else:
-        assert PYTHON_VERSION.startswith(match.group(1) + ".")
+def test_pre_commit_is_pinned_once() -> None:
+    minimum = re.search(r'minimum_pre_commit_version: "([\d.]+)"', PRE_COMMIT)
+    assert minimum, "minimum_pre_commit_version is not set"
+    assert minimum.group(1) == locked("pre-commit")
+    assert (
+        f"pre-commit=={locked('pre-commit')}" in PYPROJECT["dependency-groups"]["lint"]
+    )
+
+
+def test_workflows_share_one_mise_version() -> None:
+    versions = {
+        name: match.group(1)
+        for name, text in WORKFLOWS.items()
+        if (match := re.search(r'MISE_VERSION: "([\d.]+)"', text))
+    }
+    assert "ci.yml" in versions, "ci.yml must pin MISE_VERSION"
+    assert len(set(versions.values())) == 1, versions
+
+
+@pytest.mark.parametrize("name", ["ci.yml", ".pre-commit-config.yaml"])
+def test_only_existing_mise_tasks_are_called(name: str) -> None:
+    text = PRE_COMMIT if name == ".pre-commit-config.yaml" else WORKFLOWS[name]
+    tasks = set(re.findall(r"mise run ([\w:-]+)", text))
+    assert tasks, f"{name} runs no mise task"
+    assert tasks <= set(MISE["tasks"]), tasks - set(MISE["tasks"])

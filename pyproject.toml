@@ -57,8 +57,10 @@ Paper = "https://doi.org/10.1016/j.atmosenv.2026.122455"
 Demo = "https://richardesp-pollenformer-uco-demo.hf.space/"
 
 [dependency-groups]
-# Keep ruff in sync with the ruff-pre-commit rev in .pre-commit-config.yaml.
-lint = ["import-linter>=2.15", "ruff==0.17.3"]
+# pre-commit runs every linter and formatter (.pre-commit-config.yaml); pinning it here
+# gives local runs, mise and CI the same version. Keep its minimum_pre_commit_version and
+# the ruff-pre-commit rev in sync (tests/test_tooling_consistency.py checks both).
+lint = ["import-linter>=2.15", "pre-commit==4.7.0", "ruff==0.17.3"]
 test = ["pytest>=9.2.0", "pytest-cov>=7.1.0"]
 dev = [{ include-group = "lint" }, { include-group = "test" }]
 

@@ -1,9 +1,17 @@
-# `uv tool install --python 3.13 pre-commit==4.7.0`, then `pre-commit install` once: the hooks
-# format and validate staged files on commit. CI runs the same hooks on every file with the same
-# versions (.github/workflows/lint.yml): keep both in sync.
-# Each tool reads its own config (pyproject.toml for Ruff, .prettierrc.yaml, .markdownlint-cli2.yaml,
-# .yamllint.yaml): no hook adds its own rules.
+# Single source of truth for linting, formatting and the git hooks, run through mise:
+#   mise run setup:uv-env   # .venv with pre-commit pinned in uv.lock, plus the git hooks
+#   mise run lint:all       # every commit-time hook on every file (what CI runs)
+#   mise run lint:staged    # every commit-time hook on the staged files
+# The git hooks are pre-commit's own (`pre-commit install`): commit-time hooks run on
+# commit, and the hooks marked `stages: [pre-push]` run on push. Hooks that wrap a
+# command call its mise task, so each command is defined once, in mise.toml.
+# Each tool reads its own config (pyproject.toml for Ruff and import-linter,
+# .prettierrc.yaml, .markdownlint-cli2.yaml, .yamllint.yaml): no hook adds its own rules.
+# Keep minimum_pre_commit_version equal to pre-commit in uv.lock.
 minimum_pre_commit_version: "4.7.0"
+default_install_hook_types: [pre-commit, pre-push]
+# Hooks run on commit unless they say otherwise, so pushing does not lint everything again.
+default_stages: [pre-commit]
 default_language_version:
   # pre-commit downloads this Node for Prettier and markdownlint instead of using whatever is installed.
   node: "24.22.2"
@@ -15,13 +23,17 @@ repos:
       - id: check-toml
       - id: check-merge-conflict
       - id: check-case-conflict
+      # These three also declare the pre-push stage in their manifest; keep them on commit.
       - id: end-of-file-fixer
+        stages: [pre-commit]
       - id: trailing-whitespace
+        stages: [pre-commit]
       - id: mixed-line-ending
         args: ["--fix=lf"]
       - id: check-added-large-files
         # The README GIFs in static/ weigh up to 5.3 MB.
         args: ["--maxkb=6000"]
+        stages: [pre-commit]
       - id: no-commit-to-branch
         # main only changes through squash-merged PRs.
         args: ["--branch", "main"]
@@ -35,6 +47,17 @@ repos:
       - id: ruff-check
         args: ["--fix"]
       - id: ruff-format
+
+  # Architecture contracts of [tool.importlinter] (layers, so no import cycles). It needs
+  # the installed package, so its mise task runs it in the project environment.
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: import-linter
+        entry: mise run lint:imports
+        language: unsupported
+        types: [python]
+        pass_filenames: false
 
   # pyproject.toml against the PEP 517/621/639/735 schemas and the tool schemas of SchemaStore.
   - repo: https://github.com/abravalheri/validate-pyproject
@@ -83,3 +106,27 @@ repos:
       - id: check-citation-file-format
       - id: check-github-workflows
       - id: check-dependabot
+
+  # Secrets and tests, through their mise tasks (gitleaks is pinned in mise.toml).
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: gitleaks (staged changes)
+        entry: mise run sec:gitleaks:staged
+        language: unsupported
+        pass_filenames: false
+        always_run: true
+      - id: unit-tests
+        name: unit tests
+        entry: mise run test:unit
+        language: unsupported
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+      - id: gitleaks-history
+        name: gitleaks (history)
+        entry: mise run sec:gitleaks:history
+        language: unsupported
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
