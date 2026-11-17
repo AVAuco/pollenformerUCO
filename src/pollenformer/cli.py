@@ -20,10 +20,13 @@ def _fetch(_args: argparse.Namespace) -> int:
 
 def _predict(args: argparse.Namespace) -> int:
     """Classify one image and print the prediction as JSON."""
-    # Imported here so `pollenformer fetch` does not pay for torch/torchvision model code.
+    # Imported here so `pollenformer fetch` does not pay for torch/torchvision model
+    # code.
     from pollenformer.pipeline import predict_image
 
-    response = predict_image(args.image, topk=args.topk, k_vote=args.k_vote, weighted=args.weighted)
+    response = predict_image(
+        args.image, topk=args.topk, k_vote=args.k_vote, weighted=args.weighted
+    )
     sys.stdout.write(response.model_dump_json(indent=2) + "\n")
     return 0
 
@@ -37,18 +40,27 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pollenformer", description="PollenFormerUCO pollen grain classifier."
     )
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Log progress to stderr.")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Log progress to stderr."
+    )
     commands = parser.add_subparsers(dest="command", required=True)
 
-    fetch = commands.add_parser("fetch", help="Download and verify the model and gallery.")
+    fetch = commands.add_parser(
+        "fetch", help="Download and verify the model and gallery."
+    )
     fetch.set_defaults(handler=_fetch)
 
     predict = commands.add_parser("predict", help="Classify a microscopy image.")
     predict.add_argument("image", type=Path, help="Image file (JPG, PNG, WEBP, BMP).")
     predict.add_argument("--topk", type=int, default=5, help="Neighbours to report.")
     predict.add_argument(
-        "--k-vote", type=int, default=1, help="Neighbours that vote (paper: cosine 1-NN)."
+        "--k-vote",
+        type=int,
+        default=1,
+        help="Neighbours that vote (paper: cosine 1-NN).",
     )
     predict.add_argument(
         "--weighted", action="store_true", help="Weight votes by cosine similarity."

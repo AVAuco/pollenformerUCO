@@ -84,7 +84,9 @@ def knn_predict(
         weights = np.maximum(sims[voters], 0.0)
         if weights.sum() == 0.0:
             weights = np.ones_like(weights)
-        scores = np.bincount(gallery.labels[voters], weights=weights, minlength=n_classes)
+        scores = np.bincount(
+            gallery.labels[voters], weights=weights, minlength=n_classes
+        )
     else:
         scores = np.bincount(gallery.labels[voters], minlength=n_classes)
     pred_id = int(scores.argmax())

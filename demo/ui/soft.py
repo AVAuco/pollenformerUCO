@@ -1,4 +1,4 @@
-"""SOFT mode: the simplified, public-facing UI with fixed k-NN and attention settings."""
+"""SOFT mode: the public-facing UI with fixed k-NN and attention settings."""
 
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ def _render_sidebar() -> None:
 
 
 def _render_results() -> None:
-    """Show the stored prediction: headline, neighbours, embedding map and model card."""
+    """Show the stored prediction with neighbours, embedding map and model card."""
     response = st.session_state["pred_response"]
     if response is None:
         return
@@ -82,5 +82,8 @@ def render_ui() -> None:
         return
     ensure_attention(parse_head_fuse(HEAD_LABEL))
     render_attention(
-        alpha=ALPHA, blend_on_image=True, head_label=HEAD_LABEL, overlay_caption="Attention Overlay"
+        alpha=ALPHA,
+        blend_on_image=True,
+        head_label=HEAD_LABEL,
+        overlay_caption="Attention Overlay",
     )

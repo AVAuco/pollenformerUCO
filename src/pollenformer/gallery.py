@@ -62,14 +62,16 @@ def load_gallery_index(
 
     Args:
         index_path: ``.npz`` with ``feats`` ``(N, D)`` and ``labels`` ``(N,)``.
-        meta_path: JSON with ``class_names``, and optionally ``paths`` and ``normalized``.
+        meta_path: JSON with ``class_names``, and optionally ``paths`` and
+            ``normalized``.
         emb_dim: Expected embedding size; a mismatch is logged, not raised.
 
     Returns:
         The loaded gallery, normalized when the metadata says it is not.
 
     Raises:
-        IndexLoadError: If a file is missing or malformed, or labels and features disagree.
+        IndexLoadError: If a file is missing or malformed, or labels and
+            features disagree.
     """
     index_path, meta_path = Path(index_path), Path(meta_path)
     for path, kind in ((index_path, "Index npz"), (meta_path, "Meta json")):
@@ -96,7 +98,9 @@ def load_gallery_index(
     if labels.size and (labels.min() < 0 or labels.max() >= len(class_names)):
         raise IndexLoadError(f"labels fall outside the {len(class_names)} class names")
     if feats.shape[1] != emb_dim:
-        logger.warning("Embedding dim mismatch: file D=%d, expected %d", feats.shape[1], emb_dim)
+        logger.warning(
+            "Embedding dim mismatch: file D=%d, expected %d", feats.shape[1], emb_dim
+        )
 
     if not meta.get("normalized", False):
         feats = l2_normalize_rows(feats)

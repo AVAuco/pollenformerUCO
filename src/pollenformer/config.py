@@ -1,7 +1,8 @@
 """Runtime settings: device, input preprocessing and k-NN thresholds.
 
-Every value can be overridden with an environment variable. Importing this module is cheap: it
-only reads the environment and picks a device; artifacts are loaded lazily by ``pipeline``.
+Every value can be overridden with an environment variable. Importing this module is
+cheap: it only reads the environment and picks a device; artifacts are loaded lazily by
+``pipeline``.
 """
 
 from __future__ import annotations
@@ -66,7 +67,9 @@ def env_float(name: str, default: float) -> float:
     try:
         return float(value)
     except ValueError:
-        logger.warning("Invalid float for %s=%r; using default=%s", name, value, default)
+        logger.warning(
+            "Invalid float for %s=%r; using default=%s", name, value, default
+        )
         return default
 
 
@@ -102,7 +105,9 @@ def env_float_list(name: str, default: list[float]) -> list[float]:
     try:
         return [float(item) for item in value.split(",")]
     except ValueError:
-        logger.warning("Invalid float list for %s=%r; using default=%r", name, value, default)
+        logger.warning(
+            "Invalid float list for %s=%r; using default=%r", name, value, default
+        )
         return default
 
 
@@ -143,9 +148,9 @@ if _TORCH_THREADS > 0 and DEVICE.type == "cpu":
 NUM_CLASSES = env_int("NUM_CLASSES", 18)
 EMB_DIM = env_int("EMB_DIM", 128)
 
-# Thresholds on the best neighbour's cosine similarity for the match-quality "semaphore": a high
-# vote share can still be unreliable when the top neighbour is far away (out-of-distribution
-# query). Green >= HIGH, amber >= LOW, else red.
+# Thresholds on the best neighbour's cosine similarity for the match-quality
+# "semaphore": a high vote share can still be unreliable when the top neighbour is far
+# away (out-of-distribution query). Green >= HIGH, amber >= LOW, else red.
 SIM_CONF_HIGH = env_float("SIM_CONF_HIGH", 0.80)
 SIM_CONF_LOW = env_float("SIM_CONF_LOW", 0.65)
 
@@ -159,7 +164,9 @@ IMAGENET_STD = (0.229, 0.224, 0.225)
 _IMG_MEAN = env_float_list("IMG_MEAN", list(IMAGENET_MEAN))
 _IMG_STD = env_float_list("IMG_STD", list(IMAGENET_STD))
 if len(_IMG_MEAN) != 3 or len(_IMG_STD) != 3:
-    logger.warning("IMG_MEAN/IMG_STD need 3 values; falling back to per-channel unit stats.")
+    logger.warning(
+        "IMG_MEAN/IMG_STD need 3 values; falling back to per-channel unit stats."
+    )
     _IMG_MEAN, _IMG_STD = [0.0, 0.0, 0.0], [1.0, 1.0, 1.0]
 
 IMG_TRANSFORM = transforms.Compose(

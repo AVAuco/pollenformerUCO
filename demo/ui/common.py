@@ -1,4 +1,4 @@
-"""Upload checks, session state and the predict/attention flow shared by both UI modes."""
+"""Upload checks, session state and the predict/attention flow of both modes."""
 
 from __future__ import annotations
 
@@ -50,7 +50,8 @@ def upload_is_valid(uploaded: Any) -> bool:
     """Check the upload's MIME type and size, showing an error when it is rejected.
 
     Args:
-        uploaded: Object with ``type`` and ``getbuffer()``, like a Streamlit ``UploadedFile``.
+        uploaded: Object with ``type`` and ``getbuffer()``, like a Streamlit
+            ``UploadedFile``.
 
     Returns:
         Whether the upload can be processed.
@@ -58,7 +59,9 @@ def upload_is_valid(uploaded: Any) -> bool:
     content_type = getattr(uploaded, "type", None) or ""
     if content_type not in ALLOWED_IMAGE_CT:
         allowed = ", ".join(sorted(ALLOWED_IMAGE_CT))
-        st.error(f"Unsupported file type: {content_type or 'unknown'}. Allowed: {allowed}")
+        st.error(
+            f"Unsupported file type: {content_type or 'unknown'}. Allowed: {allowed}"
+        )
         return False
     if uploaded.getbuffer().nbytes > MAX_UPLOAD_BYTES:
         st.error(f"File too large (> {MAX_UPLOAD_BYTES // (1024 * 1024)} MiB)")
@@ -78,7 +81,9 @@ def predict_and_store(uploaded: Any, *, topk: int, k_vote: int, weighted: bool) 
     try:
         with st.spinner("Embedding and searching…"):
             start = time.perf_counter()
-            image, response = run_prediction(uploaded, topk=topk, k_vote=k_vote, weighted=weighted)
+            image, response = run_prediction(
+                uploaded, topk=topk, k_vote=k_vote, weighted=weighted
+            )
             elapsed = time.perf_counter() - start
     except Exception as exc:  # shown in the page instead of crashing the app
         st.error(f"Prediction failed: {exc}")
@@ -112,7 +117,9 @@ def parse_head_fuse(label: str) -> HeadFuse:
     return label if label in {"mean", "max"} else "mean"
 
 
-def blend_attention(base: np.ndarray, attention: np.ndarray, alpha: float) -> np.ndarray:
+def blend_attention(
+    base: np.ndarray, attention: np.ndarray, alpha: float
+) -> np.ndarray:
     """Overlay the attention map in red on the image.
 
     Args:
@@ -130,7 +137,7 @@ def blend_attention(base: np.ndarray, attention: np.ndarray, alpha: float) -> np
 
 
 def ensure_attention(head_fuse: HeadFuse) -> None:
-    """Compute the attention overlay unless the stored one matches the image and head choice.
+    """Compute the attention overlay unless the stored one is still current.
 
     Args:
         head_fuse: Head selection passed to the pipeline.
@@ -148,7 +155,9 @@ def ensure_attention(head_fuse: HeadFuse) -> None:
         st.error(f"Attention overlay failed: {exc}")
         st.exception(exc)
         return
-    state.update(attn_map=vis["attention"], base_img_np=vis["image"], attn_head_fuse=head_fuse)
+    state.update(
+        attn_map=vis["attention"], base_img_np=vis["image"], attn_head_fuse=head_fuse
+    )
 
 
 def render_attention(

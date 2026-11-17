@@ -82,10 +82,11 @@ torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 
 # ---------------------------------------------------------------------------------------------
-# Ruff: formatting and lint. One maximum line length for code, strings and comments alike.
+# Ruff: formatting and lint. One maximum line length for code, strings and comments alike:
+# 88, the Ruff and Black default and the de facto standard for formatted Python code.
 # ---------------------------------------------------------------------------------------------
 [tool.ruff]
-line-length = 100
+line-length = 88
 src = ["src", "demo", "tests"]
 
 [tool.ruff.lint]

@@ -1,9 +1,9 @@
 """Shared image input: upload a file or pick a bundled demo sample.
 
-Both UI modes get their input from :func:`render_image_input`, so the upload-or-sample logic
-lives in one place. Samples are wrapped in :class:`SampleUpload`, which mimics Streamlit's
-``UploadedFile`` (``getvalue``, ``getbuffer``, ``name``, ``type``) so the prediction flow treats
-uploads and samples alike.
+Both UI modes get their input from :func:`render_image_input`, so the upload-or-sample
+logic lives in one place. Samples are wrapped in :class:`SampleUpload`, which mimics
+Streamlit's ``UploadedFile`` (``getvalue``, ``getbuffer``, ``name``, ``type``) so the
+prediction flow treats uploads and samples alike.
 """
 
 from __future__ import annotations
@@ -23,12 +23,12 @@ DEMO_SAMPLES_DIR = Path(__file__).resolve().parent.parent / "demo_samples"
 
 _SAMPLE_GLOBS = ("*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp")
 
-# Column ratios that centre the upload preview at about half the content width, matching the
-# attention-overlay tiles below it.
+# Column ratios that centre the upload preview at about half the content width, matching
+# the attention-overlay tiles below it.
 _PREVIEW_COLS = (1, 2, 1)
 
-# Session keys produced by the prediction flow; cleared when the input image changes so a stale
-# result never lingers under a newly selected image.
+# Session keys produced by the prediction flow; cleared when the input image changes so
+# a stale result never lingers under a newly selected image.
 _PREDICTION_STATE_KEYS = (
     "pred_response",
     "pil_img",
@@ -65,7 +65,9 @@ def list_samples() -> list[Path]:
     """
     if not DEMO_SAMPLES_DIR.is_dir():
         return []
-    paths = [path for pattern in _SAMPLE_GLOBS for path in DEMO_SAMPLES_DIR.glob(pattern)]
+    paths = [
+        path for pattern in _SAMPLE_GLOBS for path in DEMO_SAMPLES_DIR.glob(pattern)
+    ]
     return sorted(paths, key=lambda path: path.name.lower())
 
 
@@ -87,14 +89,18 @@ def render_image_input(*, key_prefix: str) -> Any:
     """Render the image-source selector and return an upload-compatible object.
 
     Args:
-        key_prefix: Unique prefix (``"soft"`` or ``"hard"``) for widget and session keys.
+        key_prefix: Unique prefix (``"soft"`` or ``"hard"``) for widget and
+            session keys.
 
     Returns:
         An ``UploadedFile`` (upload) or :class:`SampleUpload` (sample), or ``None`` when
         nothing is selected.
     """
     source = st.radio(
-        "Image source", options=["Upload", "Sample image"], horizontal=True, key=f"{key_prefix}_src"
+        "Image source",
+        options=["Upload", "Sample image"],
+        horizontal=True,
+        key=f"{key_prefix}_src",
     )
 
     if source == "Upload":
@@ -104,7 +110,9 @@ def render_image_input(*, key_prefix: str) -> Any:
             accept_multiple_files=False,
             key=f"{key_prefix}_uploader",
         )
-        _clear_stale_prediction(key_prefix, f"upload:{uploaded.name}" if uploaded else None)
+        _clear_stale_prediction(
+            key_prefix, f"upload:{uploaded.name}" if uploaded else None
+        )
         return uploaded
 
     samples = list_samples()
@@ -137,7 +145,9 @@ def square_thumb(source: Path | io.BytesIO, size: int = 160) -> Image.Image:
         A ``size`` by ``size`` RGB image.
     """
     with Image.open(source) as image:
-        return ImageOps.fit(image.convert("RGB"), (size, size), method=Image.Resampling.BICUBIC)
+        return ImageOps.fit(
+            image.convert("RGB"), (size, size), method=Image.Resampling.BICUBIC
+        )
 
 
 def gallery_thumb_path(index: int) -> Path | None:
@@ -147,7 +157,8 @@ def gallery_thumb_path(index: int) -> Path | None:
         index: Gallery index of a neighbour.
 
     Returns:
-        Path to ``{index}.jpg`` in the thumbnails directory, or ``None`` if it does not exist.
+        Path to ``{index}.jpg`` in the thumbnails directory, or ``None`` if it does not
+        exist.
     """
     path = thumbs_dir() / f"{index}.jpg"
     return path if path.exists() else None
@@ -156,7 +167,8 @@ def gallery_thumb_path(index: int) -> Path | None:
 def render_preview(uploaded: Any) -> None:
     """Show an uploaded image centred at about half the content width.
 
-    Samples already have a thumbnail next to their selector, so only uploads are previewed.
+    Samples already have a thumbnail next to their selector, so only uploads are
+    previewed.
 
     Args:
         uploaded: ``UploadedFile`` or :class:`SampleUpload`.
