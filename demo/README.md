@@ -224,14 +224,27 @@ directly: the next deploy overwrites it.
 Space settings stay in the Space, and a deploy does not change them: variables such as
 `UI_MODE`, the hardware and the visibility.
 
-**One-time setup.** The workflow needs a Hugging Face token:
+The Space's visibility is _protected_: anyone can use the app, but only its owner sees
+the Space repository, its build logs and its settings. After a deploy, follow the image
+build and the artifact download in the Space's **Logs** tab.
 
-1. Create a fine-grained token at
-   [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens), with write
-   access to the `richardesp/pollenformer-uco-demo` Space only.
+**One-time setup.** The workflow needs a Hugging Face token that can only touch the
+Space:
+
+1. Create a **fine-grained** token at
+   [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+   - Leave every user and organization permission unchecked.
+   - Under **Repositories permissions**, add `spaces/richardesp/pollenformer-uco-demo`
+     with two permissions:
+     - _Read contents of selected repos_: hub-sync reads the Space to confirm it exists,
+       and a protected Space is not public.
+     - _Write contents/settings of selected repos_: to upload the tree.
 2. In this repository, go to **Settings > Environments** and create the `huggingface`
    environment. Limit its deployment branches to `main`, and add the token as its
-   `HF_TOKEN` secret.
+   `HF_TOKEN` secret:
+   `gh secret set HF_TOKEN --env huggingface --repo AVAuco/pollenformerUCO`.
+
+Without that secret, the deploy fails with `401 Unauthorized`.
 
 ## Tests
 

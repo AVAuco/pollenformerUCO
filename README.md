@@ -187,10 +187,42 @@ researcher can clone the project and run a real prediction without training the 
 | Streamlit demo (deployed to the Space)                | [`demo/`](demo)                                                                                                                  | ✅ Available |
 | Trained weights and k-NN gallery (embeddings, labels) | [Hugging Face model repository](https://huggingface.co/richardesp/PollenFormerUCO), tag `v0.1.0`, checked by SHA-256 on download | ✅ Available |
 | Training and evaluation code                          | This repository                                                                                                                  | ⏳ Pending   |
-| UCOPollen dataset                                     | Released with its own license                                                                                                    | ⏳ Pending   |
+| UCOPollen dataset                                     | Hugging Face dataset, with its own card and license                                                                              | ⏳ Pending   |
 | Live demo                                             | [Hugging Face Space](https://richardesp-pollenformer-uco-demo.hf.space/)                                                         | ✅ Available |
 
 Links will be added here as each component is released.
+
+### How the pieces fit together
+
+```mermaid
+flowchart LR
+    repo["<b>GitHub</b><br/>AVAuco/pollenformerUCO<br/>code · tests · CI/CD · docs"]
+    model["<b>Hugging Face model repository</b><br/>richardesp/PollenFormerUCO<br/>weights · k-NN gallery · UMAP · model card"]
+    space["<b>Hugging Face Space</b> (protected)<br/>richardesp/pollenformer-uco-demo<br/>Streamlit demo"]
+    data["<b>Hugging Face dataset</b><br/>UCOPollen · splits · dataset card<br/>(pending)"]
+    repo -- "pins a tag and the SHA-256 of each file" --> model
+    repo -- "deploy-space.yml, after CI passes on main" --> space
+    model -- "downloaded and verified on start" --> space
+    repo -. "planned" .-> data
+    classDef pending stroke-dasharray: 5 5
+    class data pending
+```
+
+- **This GitHub repository is the single source of truth.** It holds the code, the tests,
+  the quality gate and the documentation. Issues and pull requests go here, and the other
+  two components link back to it.
+- **The [model repository](https://huggingface.co/richardesp/PollenFormerUCO) holds the
+  versioned artifacts.** These are the checkpoint, the k-NN gallery and its UMAP, which
+  always change together. Each version is a git tag, and
+  [`artifacts.py`](src/pollenformer/artifacts.py) pins the tag and the SHA-256 of every
+  file, so code and weights are updated together in one pull request.
+- **The [Space](https://richardesp-pollenformer-uco-demo.hf.space/) only runs the demo.**
+  [`deploy-space.yml`](.github/workflows/deploy-space.yml) deploys it from `main` after
+  CI passes, and every deploy overwrites its files, so it is never edited by hand. On
+  start, it downloads the artifacts from the model repository and verifies them. Its
+  visibility is _protected_: anyone can use the app, but only its owner sees the Space
+  repository, its build logs and its settings.
+- **UCOPollen will be a Hugging Face dataset**, with its own card, splits and license.
 
 ---
 

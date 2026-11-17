@@ -9,6 +9,10 @@ paper
 - the Streamlit demo;
 - the source the Hugging Face Space is deployed from.
 
+The trained weights live in a Hugging Face model repository, and the demo runs in a
+Hugging Face Space. Both are maintained from here: see
+[how the pieces fit together](README.md#how-the-pieces-fit-together).
+
 We welcome bug reports, fixes, documentation and reproducibility improvements.
 
 ## Issues and questions
