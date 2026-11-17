@@ -65,9 +65,14 @@ jobs:
           key: test-${{ runner.os }}-${{ hashFiles('uv.lock', '.python-version') }}
       - run: mise run setup:uv-env
       - run: mise run test:cov
+      # Report only: test:cov already enforces the threshold, and there is no data when
+      # the tests never ran, so this step never adds a second failure.
       - name: Coverage summary
-        if: always()
-        run: uv run --locked coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+        if: ${{ !cancelled() }}
+        run: |
+          [ -f .coverage ] || exit 0
+          uv run --locked coverage report --format=markdown --fail-under=0 \
+            >> "$GITHUB_STEP_SUMMARY"
       - run: mise run build:dist
       - name: Keep only what is worth caching
         if: always()
