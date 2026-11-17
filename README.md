@@ -53,7 +53,7 @@ A **fully interactive live demo of the trained model is online** — no installa
 In the demo you can:
 
 - 🖼️ **Upload a microscopy image** (JPG / PNG / WEBP / BMP) or pick a bundled sample.
-- 🏷️ Get the **predicted pollen taxon** with a confidence indicator.
+- 🏷️ Get the **predicted pollen taxon** with a similarity-based match indicator.
 - 🤝 Inspect the **top-k nearest neighbours** (with cosine similarity) used for k-NN inference.
 
 > 📦 The Space hosts the online demo only. The code lives in this repository, and the trained weights and

@@ -5,7 +5,7 @@ You upload a microscopy image and the app returns:
 
 - the predicted taxon;
 - its nearest neighbours in the reference gallery;
-- the attention map that drove the decision.
+- an attention visualization to inspect the model's spatial attention patterns.
 
 The app is a thin interface over the [`pollenformer`](../src/pollenformer) package, so it
 predicts the same thing on your machine as on the Space.
