@@ -1,0 +1,14 @@
+# Build context of demo/Dockerfile (the repository root): send only what the image needs.
+# scripts/stage_space.py copies this file to .dockerignore in the Hugging Face Space tree.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSE
+!src/
+!demo/
+**/__pycache__
+**/*.py[cod]
+**/.DS_Store
+demo/Dockerfile*
+demo/README.md
