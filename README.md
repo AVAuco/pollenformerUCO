@@ -55,8 +55,8 @@ In the demo you can:
 - 🏷️ Get the **predicted pollen taxon** with a confidence indicator.
 - 🤝 Inspect the **top-k nearest neighbours** (with cosine similarity) used for k-NN inference.
 
-> 📦 The Space hosts the online demo only. The code, trained weights and k-NN reference gallery will be
-> released through this repository: see [Code, weights & dataset](#-code-weights--dataset).
+> 📦 The Space hosts the online demo only. The code lives in this repository, which also releases the
+> trained weights and the k-NN reference gallery: see [Code, weights & dataset](#-code-weights--dataset).
 
 ---
 
@@ -180,15 +180,58 @@ For the supporting evidence and full discussion, read the
 This GitHub repository is the official home of PollenFormerUCO. The release is organised so that a
 researcher can clone the project and run a real prediction without training the model from scratch.
 
-| Component                                                         | Where                                                                    | Status       |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------ |
-| Model, inference, training and evaluation code                    | This repository                                                          | ⏳ Pending   |
-| Trained weights                                                   | Versioned release                                                        | ⏳ Pending   |
-| k-NN reference gallery: embeddings, labels and code to rebuild it | Released with the weights                                                | ⏳ Pending   |
-| UCOPollen dataset                                                 | Released with its own license                                            | ⏳ Pending   |
-| Live demo                                                         | [Hugging Face Space](https://richardesp-pollenformer-uco-demo.hf.space/) | ✅ Available |
+| Component                                             | Where                                                                    | Status            |
+| ----------------------------------------------------- | ------------------------------------------------------------------------ | ----------------- |
+| Model, k-NN inference and command line                | [`src/pollenformer/`](src/pollenformer)                                  | ✅ Available      |
+| Streamlit demo (deployed to the Space)                | [`demo/`](demo)                                                          | ✅ Available      |
+| Trained weights and k-NN gallery (embeddings, labels) | Release `v0.1.0`, checked by SHA-256 on download                         | ⏳ Pending upload |
+| Training and evaluation code                          | This repository                                                          | ⏳ Pending        |
+| UCOPollen dataset                                     | Released with its own license                                            | ⏳ Pending        |
+| Live demo                                             | [Hugging Face Space](https://richardesp-pollenformer-uco-demo.hf.space/) | ✅ Available      |
 
 Links will be added here as each component is released.
+
+---
+
+## 🚀 Quickstart
+
+Requires [mise](https://mise.jdx.dev), which installs [uv](https://docs.astral.sh/uv); uv then
+provides the Python version in [`.python-version`](.python-version) and the locked dependencies.
+
+```bash
+git clone https://github.com/AVAuco/pollenformerUCO && cd pollenformerUCO
+mise trust && mise install  # pinned tools: uv and gitleaks
+mise run setup:uv-env       # .venv from uv.lock, plus the git hooks
+mise run artifacts:fetch    # model + gallery, verified by SHA-256 (~365 MB, cached)
+
+uv run pollenformer predict demo/demo_samples/castanea.png   # JSON: taxon + neighbours
+mise run app:demo:soft      # Streamlit demo on localhost:8501 (app:demo:hard: expert mode)
+```
+
+`uv` must be the version mise pins: activate mise in your shell, or prefix the command with
+`mise exec --`. The package also installs with plain pip: `pip install .` (add `.[demo]` for the
+Streamlit app). [demo/README.md](demo/README.md) covers the settings, local copies of the
+artifacts and the Docker image of the demo.
+
+---
+
+## 🛠️ Development
+
+[`pyproject.toml`](pyproject.toml) holds the package metadata and every quality rule,
+[mise](mise.toml) is the command interface (`mise tasks` lists every workflow), and
+[pre-commit](.pre-commit-config.yaml) is the single source of truth for linting and formatting.
+GitHub Actions runs the same mise tasks, and `mise run ci:check` runs that gate locally:
+
+- **Ruff** formats and lints with an 88-character limit, Google docstrings, complexity ≤ 10 and
+  security rules.
+- **import-linter** enforces layered imports, which rules out circular dependencies, and keeps
+  the package free of the demo's UI libraries.
+- **pytest** runs the unit tests with branch coverage of at least 90%. They need neither the
+  network nor the artifacts; `mise run test:e2e` adds end-to-end checks with the real model.
+- **gitleaks** scans the staged changes on every commit and the whole history in CI.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request, and
+[demo/README.md](demo/README.md) for the environment, the configuration and every mise task.
 
 ---
 
