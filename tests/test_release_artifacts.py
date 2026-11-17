@@ -1,8 +1,8 @@
 """End-to-end checks with the released model and gallery.
 
-Skipped by default. Run them with ``POLLENFORMER_ARTIFACTS=1 mise run test`` once the
-artifacts are available, either downloaded from the release or pointed to with
-``MODEL_PATH``, ``INDEX_PATH`` and ``META_PATH``.
+Skipped by default. Run them with ``mise run test:e2e`` once the artifacts are
+available, either downloaded from the release or pointed to with ``MODEL_PATH``,
+``INDEX_PATH`` and ``META_PATH``.
 """
 
 from __future__ import annotations

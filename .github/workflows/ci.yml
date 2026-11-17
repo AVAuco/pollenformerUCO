@@ -1,0 +1,103 @@
+# Quality gate of the repository. Each job runs one mise task, the same command used
+# locally (`mise run ci:check` runs the lint, secrets, test and build steps in a row).
+# mise installs the tools pinned in mise.toml; uv installs Python from .python-version
+# and the locked environment, pre-commit included.
+name: CI
+
+on:
+  # No branch filter, so stacked PRs (based on another PR's branch) are checked too.
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MISE_VERSION: "2026.10.25"
+
+jobs:
+  lint:
+    name: lint (pre-commit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          version: ${{ env.MISE_VERSION }}
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.cache/pre-commit
+          key: lint-${{ runner.os }}-${{ hashFiles('uv.lock', '.python-version', '.pre-commit-config.yaml') }}
+      - run: mise run setup:uv-env
+      - run: mise run lint:all
+        env:
+          # The merge to main is the squash commit itself; the guard is for local commits.
+          SKIP: no-commit-to-branch
+      - name: Keep only what is worth caching
+        if: always()
+        run: uv cache prune --ci
+
+  test:
+    name: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          version: ${{ env.MISE_VERSION }}
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/uv
+          key: test-${{ runner.os }}-${{ hashFiles('uv.lock', '.python-version') }}
+      - run: mise run setup:uv-env
+      - run: mise run test:cov
+      - name: Coverage summary
+        if: always()
+        run: uv run --locked coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+      - run: mise run build:dist
+      - name: Keep only what is worth caching
+        if: always()
+        run: uv cache prune --ci
+
+  secrets:
+    name: secrets (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The whole history, so a secret removed in a later commit is still found.
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          version: ${{ env.MISE_VERSION }}
+      - run: mise run sec:gitleaks:history
+
+  demo-image:
+    name: demo image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          version: ${{ env.MISE_VERSION }}
+      # The image builds without the model artifacts: the container fetches them on start.
+      - run: mise run docker:demo:build

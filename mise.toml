@@ -1,10 +1,17 @@
-# Development tooling. `mise install` provides the pinned tools; `mise tasks` lists the workflows.
-# mise pins uv, and uv provides the Python pinned in .python-version and builds .venv with it.
-# Keep uv in sync with [build-system] and [tool.uv] in pyproject.toml, the uv-lock hook rev in
-# .pre-commit-config.yaml and the uv image in demo/Dockerfile.
+# Command interface of the repository: `mise tasks` lists every workflow, named
+# domain:object:action.
+# - mise pins the CLI tools below; uv provides Python (.python-version) and the locked
+#   environment (uv.lock), pre-commit included.
+# - pre-commit (.pre-commit-config.yaml) is the single source of truth for linting,
+#   formatting and the git hooks: the lint:* tasks only run it, and its hooks call the
+#   sec:* and test:* tasks defined here.
+# - CI (.github/workflows/ci.yml) runs these same tasks; `mise run ci:check` mirrors it.
+# tests/test_tooling_consistency.py checks that uv matches pyproject.toml, the uv-lock
+# hook and demo/Dockerfile.
 
 [tools]
 uv = "0.13.6"
+gitleaks = "8.30.1"
 
 [settings]
 # uv provides Python from .python-version; do not let mise install it as well.
@@ -14,13 +21,21 @@ idiomatic_version_file_enable_tools = []
 # Setup
 # ---------------------------
 
-[tasks."setup:sync"]
-description = "Create or update .venv from uv.lock: package, demo extra and every dev group"
-run = "uv sync --locked --all-extras --all-groups"
+[tasks."setup:uv-env"]
+description = "Sync .venv from uv.lock (package, demo extra, dev groups) and git hooks"
+run = [
+    "uv sync --locked --all-extras --all-groups",
+    "{{ mise_bin }} run setup:git-hooks",
+]
 
-[tasks."setup:lock"]
+[tasks."setup:uv-lock"]
 description = "Re-resolve uv.lock after editing dependencies in pyproject.toml"
 run = "uv lock"
+
+[tasks."setup:git-hooks"]
+description = "Install the pre-commit and pre-push hooks of .pre-commit-config.yaml"
+# --overwrite: replace any previous hook instead of keeping it as a "legacy" hook.
+run = "uv run --locked pre-commit install --overwrite"
 
 [tasks."setup:clean"]
 description = "Remove build artifacts and caches"
@@ -30,41 +45,66 @@ find . -type d -name __pycache__ -prune -exec rm -rf {} +
 """
 
 # ---------------------------
-# Quality gates (`mise run check` runs what CI runs)
+# Lint and format (pre-commit is the source of truth)
 # ---------------------------
 
-[tasks."lint:check"]
-description = "Check Ruff formatting and lint rules"
-run = ["uv run --locked ruff format --check .", "uv run --locked ruff check ."]
+[tasks."lint:all"]
+description = "Run every commit-time pre-commit hook on every file (what CI runs)"
+run = "uv run --locked pre-commit run --all-files"
 
-[tasks."lint:format"]
-description = "Apply Ruff formatting and safe lint fixes"
-run = ["uv run --locked ruff format .", "uv run --locked ruff check --fix ."]
+[tasks."lint:staged"]
+description = "Run every commit-time pre-commit hook on the staged files"
+run = "uv run --locked pre-commit run"
+
+[tasks."lint:hook"]
+description = "Run one pre-commit hook on every file: mise run lint:hook ruff-check"
+run = "uv run --locked pre-commit run --all-files"
 
 [tasks."lint:imports"]
-description = "Enforce the import-linter architecture contracts (layers, no cycles)"
+description = "Check the import-linter architecture contracts (layers, no cycles)"
 run = "uv run --locked lint-imports"
 
-[tasks."lint:pre-commit"]
-description = "Run every pre-commit hook on every file (Markdown, YAML, TOML, Python)"
-run = "pre-commit run --all-files"
+# ---------------------------
+# Security
+# ---------------------------
 
-[tasks.test]
+[tasks."sec:gitleaks:staged"]
+description = "Scan the staged changes for secrets"
+run = "gitleaks git --staged --redact --no-banner"
+
+[tasks."sec:gitleaks:history"]
+description = "Scan the whole git history for secrets (what CI runs)"
+run = "gitleaks git --redact --no-banner"
+
+# ---------------------------
+# Tests
+# ---------------------------
+
+[tasks."test:unit"]
 description = "Run the unit tests (no network, no model artifacts)"
 run = "uv run --locked pytest"
 
 [tasks."test:cov"]
-description = "Run the unit tests with branch coverage and the coverage threshold"
+description = "Run the unit tests with branch coverage and its threshold (what CI runs)"
 run = "uv run --locked pytest --cov --cov-report=term-missing --cov-report=xml"
 
-[tasks."test:artifacts"]
-description = "Run the end-to-end tests that need the released model and gallery"
+[tasks."test:e2e"]
+description = "Run the end-to-end tests with the released model and gallery"
 env = { POLLENFORMER_ARTIFACTS = "1" }
 run = "uv run --locked pytest -m artifacts"
 
-[tasks.check]
-description = "Lint, architecture contracts and tests with coverage: the CI quality gate"
-depends = ["lint:check", "lint:imports", "test:cov"]
+# ---------------------------
+# CI gate
+# ---------------------------
+
+[tasks."ci:check"]
+description = "Run the CI quality gate locally: hooks, secrets, tests, package build"
+run = [
+    "{{ mise_bin }} run lint:all",
+    "{{ mise_bin }} run sec:gitleaks:history",
+    "{{ mise_bin }} run test:cov",
+    "{{ mise_bin }} run build:dist",
+]
 
 # ---------------------------
 # Model artifacts and demo assets
@@ -84,40 +124,47 @@ description = "Build the optional neighbour-thumbnail pack (args: --images-root 
 run = "uv run --locked python scripts/build_thumbs.py"
 
 # ---------------------------
-# Demo
+# Demo application
 # ---------------------------
 
-[tasks."demo:soft"]
+[tasks."app:demo:soft"]
 description = "Run the Streamlit demo, public SOFT interface, on http://localhost:8501"
 dir = "demo"
 run = "uv run --locked streamlit run main.py -- --mode SOFT"
 
-[tasks."demo:hard"]
+[tasks."app:demo:hard"]
 description = "Run the Streamlit demo, expert HARD interface, on http://localhost:8501"
 dir = "demo"
 run = "uv run --locked streamlit run main.py -- --mode HARD"
 
-[tasks."docker:build"]
-description = "Build the demo image (linux/amd64, the Hugging Face Spaces target)"
+# ---------------------------
+# Docker image of the demo (linux/amd64, the Hugging Face Spaces target)
+# ---------------------------
+
+[tasks."docker:demo:build"]
+description = "Build the demo image (what CI runs)"
 run = "docker build --platform linux/amd64 -f demo/Dockerfile -t pollenformer-uco-demo:local ."
 
-[tasks."docker:run"]
+[tasks."docker:demo:run"]
 description = "Run the demo image on http://localhost:8501, caching artifacts in a volume"
-depends = ["docker:build"]
+depends = ["docker:demo:build"]
 run = """
 docker run --rm --platform linux/amd64 -p 8501:8501 \
   -v pollenformer-uco-cache:/home/user/.cache pollenformer-uco-demo:local
 """
 
 # ---------------------------
-# Build and deploy
+# Package build and version
 # ---------------------------
 
 [tasks."build:dist"]
 description = "Build the sdist and wheel into dist/"
 run = "uv build"
 
-[tasks."space:stage"]
-description = "Assemble the Hugging Face Space tree in build/space (what CI deploys)"
-# Standard library only: --no-project skips installing the package and its torch dependency.
-run = "uv run --no-project python scripts/stage_space.py --out build/space"
+[tasks."version:get"]
+description = "Print the package version from pyproject.toml"
+run = "uv version --short"
+
+[tasks."version:bump"]
+description = "Bump the package version: mise run version:bump -- minor"
+run = "uv version --bump"

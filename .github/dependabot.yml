@@ -1,4 +1,5 @@
-# Monthly PRs that bump the pinned actions. The `ci:` prefix keeps their titles valid for pr-title.yml.
+# Monthly grouped PRs that bump the pinned actions and the Python lock file. The `ci:` and `build:`
+# prefixes keep their titles valid for pr-title.yml.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -9,4 +10,14 @@ updates:
       prefix: ci
     groups:
       github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: build
+    groups:
+      python:
         patterns: ["*"]
