@@ -55,6 +55,8 @@ mise run setup:uv-env
    asked for a review automatically.
 5. Pull requests are merged with **squash and merge**, so the title of the pull request
    becomes the commit message on `main`.
+6. Once CI passes on `main`, the `Deploy demo` workflow publishes the demo to the
+   Hugging Face Space ([demo/README.md](demo/README.md#5-deploy-to-the-hugging-face-space)).
 
 The title must follow [Conventional Commits](https://www.conventionalcommits.org/)
 (`feat`, `fix`, `docs`, `test`, `ci`, `build`, `refactor`, `perf`, `style`, `chore`,

@@ -231,8 +231,12 @@ GitHub Actions runs the same mise tasks, and `mise run ci:check` runs that gate 
   network nor the artifacts; `mise run test:e2e` adds end-to-end checks with the real model.
 - **gitleaks** scans the staged changes on every commit and the whole history in CI.
 
+Every push to `main` that passes CI deploys the demo to the Hugging Face Space through
+`deploy-space.yml`, so this repository stays the single source of truth for the Space too.
+
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request, and
-[demo/README.md](demo/README.md) for the environment, the configuration and every mise task.
+[demo/README.md](demo/README.md) for the environment, the configuration, the deployment
+and every mise task.
 
 ---
 

@@ -138,14 +138,22 @@ dir = "demo"
 run = "uv run --locked streamlit run main.py -- --mode HARD"
 
 # ---------------------------
-# Docker image of the demo (linux/amd64, the Hugging Face Spaces target). Local only:
-# the Space builds the image itself on deploy, so CI does not; build it here to check
-# demo/Dockerfile before deploying.
+# Hugging Face Space and the demo image
+# .github/workflows/deploy-space.yml uploads the tree that hf:space:stage assembles, and
+# the Space builds the image from it. docker:demo:build builds that same tree locally
+# (linux/amd64, like the Space) to check a change before it is deployed; CI does not
+# build the image.
 # ---------------------------
 
+[tasks."hf:space:stage"]
+description = "Assemble the Hugging Face Space tree in build/space (what deploy uploads)"
+# Standard library only: --no-project skips installing the package and torch.
+run = "uv run --no-project python scripts/stage_space.py --out build/space"
+
 [tasks."docker:demo:build"]
-description = "Build the demo image locally, to check it before deploying the Space"
-run = "docker build --platform linux/amd64 -f demo/Dockerfile -t pollenformer-uco-demo:local ."
+description = "Build the demo image from the Space tree, as the Hugging Face Space does"
+depends = ["hf:space:stage"]
+run = "docker build --platform linux/amd64 -t pollenformer-uco-demo:local build/space"
 
 [tasks."docker:demo:run"]
 description = "Run the demo image on http://localhost:8501, caching artifacts in a volume"

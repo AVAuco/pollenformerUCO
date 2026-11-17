@@ -1,0 +1,77 @@
+# Deploys the Streamlit demo to its Hugging Face Space from this repository, the single source
+# of truth. It runs after every successful CI run on main, so the Space only receives code
+# that passed the quality gate, and it can also be started by hand from the Actions tab.
+#
+# `mise run hf:space:stage` assembles the Space tree (the image's build context, with the
+# Dockerfile and the Space card at the root) and hub-sync uploads it as one commit. Files
+# that are not in the tree are deleted from the Space; when nothing changed, no commit is
+# made and the Space is not rebuilt. The Space downloads and verifies the model artifacts on
+# start, from the Hugging Face model repository and tag in src/pollenformer/artifacts.py.
+#
+# One-time setup: a fine-grained Hugging Face token with write access to this Space only,
+# stored as the HF_TOKEN secret of the `huggingface` environment (Settings > Environments),
+# with its deployment branches limited to main.
+name: Deploy demo
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-space
+  cancel-in-progress: false
+
+env:
+  MISE_VERSION: "2026.10.25"
+  SPACE_ID: richardesp/pollenformer-uco-demo
+
+jobs:
+  deploy:
+    name: Hugging Face Space
+    # A manual run from main, or a CI run that passed on a push to main of this repository.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: huggingface
+      url: https://richardesp-pollenformer-uco-demo.hf.space/
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The commit CI checked, even if main has moved since.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+        with:
+          version: ${{ env.MISE_VERSION }}
+      - run: mise run hf:space:stage
+      - uses: huggingface/hub-sync@fdffea8e04104d0bd4e3181c5feb3025f0433ff5 # v0.3.0
+        with:
+          github_repo_id: ${{ github.repository }}
+          huggingface_repo_id: ${{ env.SPACE_ID }}
+          hf_token: ${{ secrets.HF_TOKEN }}
+          space_sdk: docker
+          subdirectory: build/space
+          # The staged tree is the whole Space: files that are not in it are removed there.
+          delete_removed: "true"
+          hf_version: "2.4.0"
+      - name: Deployment summary
+        env:
+          COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          {
+            echo "### Demo deployed"
+            echo
+            echo "Commit \`${COMMIT}\` synced to [${SPACE_ID}](https://huggingface.co/spaces/${SPACE_ID})."
+            echo "If the tree changed, the Space rebuilds its image: follow it in its build logs."
+          } >> "$GITHUB_STEP_SUMMARY"

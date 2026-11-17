@@ -90,7 +90,7 @@ torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 # ---------------------------------------------------------------------------------------------
 [tool.ruff]
 line-length = 88
-src = ["src", "demo", "tests"]
+src = ["src", "demo", "scripts", "tests"]
 
 [tool.ruff.lint]
 select = [
@@ -166,8 +166,9 @@ forbidden_modules = ["streamlit", "altair", "pandas"]
 [tool.pytest.ini_options]
 minversion = "9.0"
 testpaths = ["tests"]
-# demo/ for the Streamlit `ui` package, tests/ for the shared `helpers` module.
-pythonpath = ["demo", "tests"]
+# demo/ for the Streamlit `ui` package, scripts/ for the build tools, tests/ for the
+# shared `helpers` module.
+pythonpath = ["demo", "scripts", "tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
 xfail_strict = true
 markers = [

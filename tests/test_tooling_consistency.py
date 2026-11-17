@@ -82,7 +82,9 @@ def test_workflows_share_one_mise_version() -> None:
     assert len(set(versions.values())) == 1, versions
 
 
-@pytest.mark.parametrize("name", ["ci.yml", ".pre-commit-config.yaml"])
+@pytest.mark.parametrize(
+    "name", ["ci.yml", "deploy-space.yml", ".pre-commit-config.yaml"]
+)
 def test_only_existing_mise_tasks_are_called(name: str) -> None:
     text = PRE_COMMIT if name == ".pre-commit-config.yaml" else WORKFLOWS[name]
     tasks = set(re.findall(r"mise run ([\w:-]+)", text))
