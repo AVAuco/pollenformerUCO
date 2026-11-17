@@ -1,0 +1,123 @@
+# Development tooling. `mise install` provides the pinned tools; `mise tasks` lists the workflows.
+# mise pins uv, and uv provides the Python pinned in .python-version and builds .venv with it.
+# Keep uv in sync with [build-system] and [tool.uv] in pyproject.toml, the uv-lock hook rev in
+# .pre-commit-config.yaml and the uv image in demo/Dockerfile.
+
+[tools]
+uv = "0.13.6"
+
+[settings]
+# uv provides Python from .python-version; do not let mise install it as well.
+idiomatic_version_file_enable_tools = []
+
+# ---------------------------
+# Setup
+# ---------------------------
+
+[tasks."setup:sync"]
+description = "Create or update .venv from uv.lock: package, demo extra and every dev group"
+run = "uv sync --locked --all-extras --all-groups"
+
+[tasks."setup:lock"]
+description = "Re-resolve uv.lock after editing dependencies in pyproject.toml"
+run = "uv lock"
+
+[tasks."setup:clean"]
+description = "Remove build artifacts and caches"
+run = """
+rm -rf build dist .pytest_cache .ruff_cache .coverage coverage.xml
+find . -type d -name __pycache__ -prune -exec rm -rf {} +
+"""
+
+# ---------------------------
+# Quality gates (`mise run check` runs what CI runs)
+# ---------------------------
+
+[tasks."lint:check"]
+description = "Check Ruff formatting and lint rules"
+run = ["uv run --locked ruff format --check .", "uv run --locked ruff check ."]
+
+[tasks."lint:format"]
+description = "Apply Ruff formatting and safe lint fixes"
+run = ["uv run --locked ruff format .", "uv run --locked ruff check --fix ."]
+
+[tasks."lint:imports"]
+description = "Enforce the import-linter architecture contracts (layers, no cycles)"
+run = "uv run --locked lint-imports"
+
+[tasks."lint:pre-commit"]
+description = "Run every pre-commit hook on every file (Markdown, YAML, TOML, Python)"
+run = "pre-commit run --all-files"
+
+[tasks.test]
+description = "Run the unit tests (no network, no model artifacts)"
+run = "uv run --locked pytest"
+
+[tasks."test:cov"]
+description = "Run the unit tests with branch coverage and the coverage threshold"
+run = "uv run --locked pytest --cov --cov-report=term-missing --cov-report=xml"
+
+[tasks."test:artifacts"]
+description = "Run the end-to-end tests that need the released model and gallery"
+env = { POLLENFORMER_ARTIFACTS = "1" }
+run = "uv run --locked pytest -m artifacts"
+
+[tasks.check]
+description = "Lint, architecture contracts and tests with coverage: the CI quality gate"
+depends = ["lint:check", "lint:imports", "test:cov"]
+
+# ---------------------------
+# Model artifacts and demo assets
+# ---------------------------
+
+[tasks."artifacts:fetch"]
+description = "Download and verify the model checkpoint and k-NN gallery"
+run = "uv run --locked pollenformer fetch"
+
+[tasks."assets:umap"]
+description = "Build umap_xy.npz from the gallery (args: --index PATH --out PATH)"
+# Isolated env: umap-learn pulls numba/llvmlite, which stay out of the project lock.
+run = "uv run --isolated --no-project --with 'umap-learn>=0.5.6' python scripts/build_umap.py"
+
+[tasks."assets:thumbs"]
+description = "Build the optional neighbour-thumbnail pack (args: --images-root PATH)"
+run = "uv run --locked python scripts/build_thumbs.py"
+
+# ---------------------------
+# Demo
+# ---------------------------
+
+[tasks."demo:soft"]
+description = "Run the Streamlit demo, public SOFT interface, on http://localhost:8501"
+dir = "demo"
+run = "uv run --locked streamlit run main.py -- --mode SOFT"
+
+[tasks."demo:hard"]
+description = "Run the Streamlit demo, expert HARD interface, on http://localhost:8501"
+dir = "demo"
+run = "uv run --locked streamlit run main.py -- --mode HARD"
+
+[tasks."docker:build"]
+description = "Build the demo image (linux/amd64, the Hugging Face Spaces target)"
+run = "docker build --platform linux/amd64 -f demo/Dockerfile -t pollenformer-uco-demo:local ."
+
+[tasks."docker:run"]
+description = "Run the demo image on http://localhost:8501, caching artifacts in a volume"
+depends = ["docker:build"]
+run = """
+docker run --rm --platform linux/amd64 -p 8501:8501 \
+  -v pollenformer-uco-cache:/home/user/.cache pollenformer-uco-demo:local
+"""
+
+# ---------------------------
+# Build and deploy
+# ---------------------------
+
+[tasks."build:dist"]
+description = "Build the sdist and wheel into dist/"
+run = "uv build"
+
+[tasks."space:stage"]
+description = "Assemble the Hugging Face Space tree in build/space (what CI deploys)"
+# Standard library only: --no-project skips installing the package and its torch dependency.
+run = "uv run --no-project python scripts/stage_space.py --out build/space"

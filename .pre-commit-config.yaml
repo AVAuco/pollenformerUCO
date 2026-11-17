@@ -1,7 +1,8 @@
-# `uvx --python 3.13 pre-commit@4.7.0 install` once: the hooks then format and validate staged files on commit.
-# CI runs the same hooks on every file with the same versions (.github/workflows/lint.yml): keep both in sync.
-# Each tool reads its own config file (.prettierrc.yaml, .markdownlint-cli2.yaml, .yamllint.yaml):
-# no hook adds its own rules.
+# `uv tool install --python 3.13 pre-commit==4.7.0`, then `pre-commit install` once: the hooks
+# format and validate staged files on commit. CI runs the same hooks on every file with the same
+# versions (.github/workflows/lint.yml): keep both in sync.
+# Each tool reads its own config (pyproject.toml for Ruff, .prettierrc.yaml, .markdownlint-cli2.yaml,
+# .yamllint.yaml): no hook adds its own rules.
 minimum_pre_commit_version: "4.7.0"
 default_language_version:
   # pre-commit downloads this Node for Prettier and markdownlint instead of using whatever is installed.
@@ -11,6 +12,7 @@ repos:
     rev: v6.0.0
     hooks:
       - id: check-yaml
+      - id: check-toml
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: end-of-file-fixer
@@ -23,6 +25,30 @@ repos:
       - id: no-commit-to-branch
         # main only changes through squash-merged PRs.
         args: ["--branch", "main"]
+      - id: debug-statements
+      - id: detect-private-key
+
+  # Python: lint and format with the rules in [tool.ruff] of pyproject.toml.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3 # keep in sync with ruff in uv.lock
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+
+  # pyproject.toml against the PEP 517/621/639/735 schemas and the tool schemas of SchemaStore.
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.27
+    hooks:
+      - id: validate-pyproject
+        additional_dependencies:
+          ["validate-pyproject-schema-store[all]==2026.10.30"]
+
+  # uv.lock must match pyproject.toml.
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.13.6 # keep in sync with uv in mise.toml
+    hooks:
+      - id: uv-lock
 
   # Formatter for Markdown, YAML and CITATION.cff (parsed as YAML through .prettierrc.yaml).
   - repo: local
