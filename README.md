@@ -11,6 +11,9 @@
 [![Paper](https://img.shields.io/badge/Paper-Atmospheric_Environment-9cf?style=for-the-badge)](https://doi.org/10.1016/j.atmosenv.2026.122455)
 [![License](https://img.shields.io/badge/License-MIT-3da639?style=for-the-badge)](#-license)
 
+[![CI](https://github.com/AVAuco/pollenformerUCO/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AVAuco/pollenformerUCO/actions/workflows/ci.yml)
+[![Deploy demo](https://github.com/AVAuco/pollenformerUCO/actions/workflows/deploy-space.yml/badge.svg?branch=main)](https://github.com/AVAuco/pollenformerUCO/actions/workflows/deploy-space.yml)
+
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c?logo=pytorch&logoColor=white)
 ![Backbone](https://img.shields.io/badge/Backbone-DINOv2--ViT--B-264796)
