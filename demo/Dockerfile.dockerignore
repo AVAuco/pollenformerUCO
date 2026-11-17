@@ -11,4 +11,5 @@
 **/*.py[cod]
 **/.DS_Store
 demo/Dockerfile*
-demo/README.md
+# The demo's guide and the Space card are documentation, not part of the image.
+demo/*.md

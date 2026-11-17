@@ -1,0 +1,4 @@
+# Code owners are asked for a review on every pull request that changes their files.
+# Patterns follow .gitignore syntax and the last matching line wins.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+* @richardesp

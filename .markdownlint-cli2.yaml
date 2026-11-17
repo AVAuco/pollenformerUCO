@@ -7,7 +7,7 @@ config:
   MD041: false
   # Inside that hero, the subtitle lines are h3/h4 under the h1 title; every other heading keeps the hierarchy.
   MD001: false
-  # demo/README.md is a Hugging Face Space card: its front-matter `title:` is Space metadata, not the h1.
+  # demo/space-card.md is a Hugging Face Space card: its front-matter `title:` is Space metadata, not the h1.
   MD025:
     front_matter_title: ""
   # Inline HTML is limited to what the README uses: centred hero, badges, collapsible sections, affiliations.

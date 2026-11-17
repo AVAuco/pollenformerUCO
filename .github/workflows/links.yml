@@ -1,4 +1,4 @@
-# Dead links in the README (paper DOI, demo, dataset) are caught here instead of by readers.
+# Dead links in the docs (paper DOI, demo, dataset, relative links) are caught here instead of by readers.
 # Network checks are flaky by nature, so they run outside pre-commit: on PRs that touch docs and weekly.
 name: Links
 
@@ -25,4 +25,4 @@ jobs:
         with:
           # Pinned rather than the action's default, so the check does not change under a Dependabot bump.
           lycheeVersion: v0.24.2
-          args: --no-progress README.md CITATION.cff
+          args: --no-progress README.md CONTRIBUTING.md demo/README.md demo/space-card.md CITATION.cff
