@@ -8,6 +8,8 @@ app_port: 8501
 pinned: false
 license: mit
 short_description: Interactive Streamlit demo for PollenFormerUCO
+models:
+  - richardesp/PollenFormerUCO
 ---
 
 # PollenFormerUCO · Pollen Image Classifier
@@ -18,7 +20,9 @@ Interactive demo of **PollenFormerUCO**, accompanying the paper
 
 > 🛠️ This Space is deployed automatically from
 > [github.com/AVAuco/pollenformerUCO](https://github.com/AVAuco/pollenformerUCO), the single
-> source of truth for the code. Please open issues and pull requests there.
+> source of truth for the code. Please open issues and pull requests there. The model and
+> its k-NN gallery are downloaded from
+> [richardesp/PollenFormerUCO](https://huggingface.co/richardesp/PollenFormerUCO).
 
 PollenFormerUCO is a **DINOv2-ViT Base** backbone fine-tuned with a **hybrid Cross-Entropy +
 Triplet loss** that projects the CLS token into a **128-D embedding**. Predictions come from

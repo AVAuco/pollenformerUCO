@@ -108,11 +108,11 @@ def test_cache_dir_is_versioned_under_pollenformer_home(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setenv("POLLENFORMER_HOME", str(tmp_path))
-    assert artifacts.cache_dir() == tmp_path / artifacts.ARTIFACTS_RELEASE
+    assert artifacts.cache_dir() == tmp_path / artifacts.ARTIFACTS_REVISION
     monkeypatch.delenv("THUMBS_DIR", raising=False)
     assert (
         artifacts.thumbs_dir()
-        == tmp_path / artifacts.ARTIFACTS_RELEASE / "gallery_thumbs"
+        == tmp_path / artifacts.ARTIFACTS_REVISION / "gallery_thumbs"
     )
 
 
@@ -120,6 +120,12 @@ def test_manifest_is_well_formed() -> None:
     filenames = [a.filename for a in artifacts.ALL_ARTIFACTS]
     assert len(set(filenames)) == len(filenames)
     assert all(re.fullmatch(r"[0-9a-f]{64}", a.sha256) for a in artifacts.ALL_ARTIFACTS)
-    assert artifacts.DEFAULT_BASE_URL.endswith(
-        f"/download/{artifacts.ARTIFACTS_RELEASE}"
-    )
+
+
+def test_default_base_url_pins_a_tag_of_the_hugging_face_repository() -> None:
+    # A tag, not a branch: a moving `main` would break the checksums on every upload.
+    assert re.fullmatch(r"v\d+\.\d+\.\d+", artifacts.ARTIFACTS_REVISION)
+    assert (
+        f"https://huggingface.co/{artifacts.ARTIFACTS_REPO_ID}"
+        f"/resolve/{artifacts.ARTIFACTS_REVISION}"
+    ) == artifacts.DEFAULT_BASE_URL

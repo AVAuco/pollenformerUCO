@@ -39,8 +39,9 @@ To contribute changes, also read [CONTRIBUTING.md](../CONTRIBUTING.md).
   installs the Python in [`.python-version`](../.python-version) and every dependency
   locked in [`uv.lock`](../uv.lock). CI uses mise 2026.10.25.
 - [Docker](https://docs.docker.com/get-started/get-docker/) is only needed for the image.
-- The first run needs network access: about 365 MB of model artifacts from the GitHub
-  release, plus the DINOv2 architecture code from GitHub.
+- The first run needs network access: about 365 MB of model artifacts from
+  [Hugging Face](https://huggingface.co/richardesp/PollenFormerUCO), plus the DINOv2
+  architecture code from GitHub.
 
 ## 1. Set up the environment
 
@@ -78,11 +79,13 @@ To install only what the demo needs, without the development tools, run
 mise run artifacts:fetch
 ```
 
-This downloads the files of release `v0.1.0` into `~/.cache/pollenformer/v0.1.0/` and
-checks each one against the SHA-256 in
-[`artifacts.py`](../src/pollenformer/artifacts.py). A file that is already in the cache
-and verified is not downloaded again. The app fetches missing files on first use as
-well, so running this step first only moves the wait to before the app starts.
+This downloads the files of the Hugging Face model repository
+[`richardesp/PollenFormerUCO`](https://huggingface.co/richardesp/PollenFormerUCO),
+at tag `v0.1.0`, into `~/.cache/pollenformer/v0.1.0/`. It checks each one against the
+SHA-256 in [`artifacts.py`](../src/pollenformer/artifacts.py). A file that is already
+in the cache and verified is not downloaded again. The app fetches missing files on
+first use as well, so running this step first only moves the wait to before the app
+starts.
 
 | File                             | Size   | Content                                          | Local copy      |
 | -------------------------------- | ------ | ------------------------------------------------ | --------------- |
@@ -129,16 +132,16 @@ without that variable, SOFT is used.
 Every setting is an optional environment variable. Set it when you start the app, for
 example `DEVICE=cpu mise run app:demo:hard`.
 
-| Variable                                                 | Default                                 | Effect                                                                           |
-| -------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `UI_MODE`                                                | `SOFT`                                  | Interface when `--mode` is not given: `SOFT` or `HARD`                           |
-| `DEVICE`                                                 | `mps`, else `cuda`, else `cpu`          | PyTorch device                                                                   |
-| `TORCH_NUM_THREADS`                                      | PyTorch's default                       | CPU threads, used only when the device is the CPU                                |
-| `SIM_CONF_HIGH`, `SIM_CONF_LOW`                          | `0.80`, `0.65`                          | Best-neighbour cosine similarity for a green or amber match-quality light        |
-| `POLLENFORMER_HOME`                                      | `$XDG_CACHE_HOME/pollenformer`          | Artifact cache, one folder per release (`XDG_CACHE_HOME` defaults to `~/.cache`) |
-| `POLLENFORMER_BASE_URL`                                  | GitHub release `v0.1.0`                 | Where artifacts are downloaded from                                              |
-| `MODEL_PATH`, `INDEX_PATH`, `META_PATH`, `UMAP_XY_CACHE` | unset                                   | Local copy of an artifact, used as it is                                         |
-| `THUMBS_DIR`                                             | `gallery_thumbs/` in the artifact cache | Neighbour thumbnails for HARD mode                                               |
+| Variable                                                 | Default                                  | Effect                                                                            |
+| -------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
+| `UI_MODE`                                                | `SOFT`                                   | Interface when `--mode` is not given: `SOFT` or `HARD`                            |
+| `DEVICE`                                                 | `mps`, else `cuda`, else `cpu`           | PyTorch device                                                                    |
+| `TORCH_NUM_THREADS`                                      | PyTorch's default                        | CPU threads, used only when the device is the CPU                                 |
+| `SIM_CONF_HIGH`, `SIM_CONF_LOW`                          | `0.80`, `0.65`                           | Best-neighbour cosine similarity for a green or amber match-quality light         |
+| `POLLENFORMER_HOME`                                      | `$XDG_CACHE_HOME/pollenformer`           | Artifact cache, one folder per revision (`XDG_CACHE_HOME` defaults to `~/.cache`) |
+| `POLLENFORMER_BASE_URL`                                  | `richardesp/PollenFormerUCO` at `v0.1.0` | Where artifacts are downloaded from                                               |
+| `MODEL_PATH`, `INDEX_PATH`, `META_PATH`, `UMAP_XY_CACHE` | unset                                    | Local copy of an artifact, used as it is                                          |
+| `THUMBS_DIR`                                             | `gallery_thumbs/` in the artifact cache  | Neighbour thumbnails for HARD mode                                                |
 
 `NUM_CLASSES`, `EMB_DIM`, `INPUT_H`, `INPUT_W`, `IMG_MEAN` and `IMG_STD` describe the
 checkpoint ([`config.py`](../src/pollenformer/config.py)). Only change them together

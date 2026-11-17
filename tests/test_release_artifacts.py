@@ -1,8 +1,8 @@
 """End-to-end checks with the released model and gallery.
 
-Skipped by default. Run them with ``mise run test:e2e`` once the artifacts are
-available, either downloaded from the release or pointed to with ``MODEL_PATH``,
-``INDEX_PATH`` and ``META_PATH``.
+Skipped by default. Run them with ``mise run test:e2e``: the artifacts are downloaded
+from the Hugging Face model repository, or taken from the local copies that
+``MODEL_PATH``, ``INDEX_PATH``, ``META_PATH`` and ``UMAP_XY_CACHE`` point to.
 """
 
 from __future__ import annotations

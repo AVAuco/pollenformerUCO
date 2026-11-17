@@ -54,6 +54,7 @@ Homepage = "https://github.com/AVAuco/pollenformerUCO"
 Repository = "https://github.com/AVAuco/pollenformerUCO"
 Issues = "https://github.com/AVAuco/pollenformerUCO/issues"
 Paper = "https://doi.org/10.1016/j.atmosenv.2026.122455"
+Model = "https://huggingface.co/richardesp/PollenFormerUCO"
 Demo = "https://richardesp-pollenformer-uco-demo.hf.space/"
 
 [dependency-groups]
