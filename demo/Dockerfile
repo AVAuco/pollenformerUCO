@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
 #
-# PollenFormerUCO demo image. The build context is the repository root:
-#   docker build -f demo/Dockerfile -t pollenformer-uco-demo .
-# The Hugging Face Space receives the same tree with this file at its root (scripts/stage_space.py)
-# and builds the LAST stage, so `app` must stay last.
+# PollenFormerUCO demo image. The Hugging Face Space builds it from the tree that
+# scripts/stage_space.py assembles (this file at the root, the repository paths below it),
+# and builds the LAST stage, so `app` must stay last. `mise run docker:demo:build` builds
+# that same tree locally; `docker build -f demo/Dockerfile .` from the repository root
+# works too.
 #
 # Model artifacts are not baked in: the container downloads and verifies them on start
 # (`pollenformer fetch`), so the image builds without them and stays small.

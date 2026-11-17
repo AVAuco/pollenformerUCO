@@ -164,12 +164,13 @@ environment, for example `STREAMLIT_SERVER_PORT=8502 mise run app:demo:soft`.
 
 ## 4. Run the Docker image locally
 
-The Hugging Face Space builds [`Dockerfile`](Dockerfile) itself every time it is
-deployed, and CI does not build it. Build and run the image locally before you deploy a
-change to the Dockerfile, the dependencies or the app:
+The Hugging Face Space builds [`Dockerfile`](Dockerfile) itself on every deploy, and CI
+does not build it. `docker:demo:build` builds the image from the same tree the Space
+receives ([section 5](#5-deploy-to-the-hugging-face-space)), so build and run it locally
+before you deploy a change to the Dockerfile, the dependencies or the app:
 
 ```bash
-mise run docker:demo:build   # pollenformer-uco-demo:local, linux/amd64
+mise run docker:demo:build   # stage build/space, then build pollenformer-uco-demo:local
 mise run docker:demo:run     # rebuilds if needed, then serves http://localhost:8501
 ```
 
@@ -192,9 +193,45 @@ docker run --rm --platform linux/amd64 -p 8501:8501 -e UI_MODE=HARD \
 ```
 
 On the Space, the same variable is set under **Settings > Variables**.
-[`space-card.md`](space-card.md) holds the Space configuration (`sdk: docker`,
-`app_port: 8501`) and the description shown on the Space page. It becomes the `README.md`
-of the Space repository.
+
+## 5. Deploy to the Hugging Face Space
+
+The [online demo](https://richardesp-pollenformer-uco-demo.hf.space/) is deployed from
+this repository by the `Deploy demo` workflow
+([`deploy-space.yml`](../.github/workflows/deploy-space.yml)). Do not edit the Space
+directly: the next deploy overwrites it.
+
+- **When.** After every CI run that passes on a push to `main`, and on demand from the
+  Actions tab (**Deploy demo > Run workflow**, on `main`).
+- **What.** `mise run hf:space:stage` assembles the Space tree in `build/space`:
+  - the files git tracks in `src/` and `demo/`, so untracked local files never reach
+    the Space;
+  - `pyproject.toml`, `uv.lock` and `LICENSE`;
+  - the Dockerfile, its ignore file and the Space card at the root.
+- **How.** [hub-sync](https://github.com/huggingface/hub-sync) uploads the tree as one
+  commit and deletes the Space files that are not in it. When nothing changed it makes
+  no commit, and the Space is not rebuilt.
+- **Then.** The Space builds the image and starts it. The container downloads the model
+  and gallery from [`richardesp/PollenFormerUCO`](https://huggingface.co/richardesp/PollenFormerUCO),
+  at the tag set in [`artifacts.py`](../src/pollenformer/artifacts.py).
+
+[`space-card.md`](space-card.md) becomes the `README.md` of the Space:
+
+- it sets `sdk: docker` and `app_port: 8501`;
+- it links the model repository;
+- it holds the text of the Space page.
+
+Space settings stay in the Space, and a deploy does not change them: variables such as
+`UI_MODE`, the hardware and the visibility.
+
+**One-time setup.** The workflow needs a Hugging Face token:
+
+1. Create a fine-grained token at
+   [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens), with write
+   access to the `richardesp/pollenformer-uco-demo` Space only.
+2. In this repository, go to **Settings > Environments** and create the `huggingface`
+   environment. Limit its deployment branches to `main`, and add the token as its
+   `HF_TOKEN` secret.
 
 ## Tests
 
@@ -218,7 +255,8 @@ passed on to the command, as in `mise run lint:hook -- ruff-check`.
 | `artifacts:fetch`                             | Download and verify the model and gallery                                   |
 | `assets:thumbs`, `assets:umap`                | Build the optional thumbnails and the UMAP projection                       |
 | `app:demo:soft`, `app:demo:hard`              | Run the demo locally                                                        |
-| `docker:demo:build`, `docker:demo:run`        | Build and run the demo image                                                |
+| `hf:space:stage`                              | Assemble the Space tree in `build/space`, as the deploy uploads it          |
+| `docker:demo:build`, `docker:demo:run`        | Build the image from that tree, and run it                                  |
 | `lint:all`, `lint:staged`                     | Run the pre-commit hooks on every file, or on the staged files              |
 | `lint:hook`                                   | Run one pre-commit hook on every file                                       |
 | `lint:imports`                                | Check the import-linter contracts (layers, no import cycles)                |
