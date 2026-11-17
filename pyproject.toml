@@ -1,0 +1,186 @@
+# Single source of truth for the project: metadata (PEP 621), license (PEP 639), build (PEP 517),
+# dependency groups (PEP 735) and every code-quality rule. Tool versions come from mise.toml.
+
+[build-system]
+# Keep in sync with uv in mise.toml.
+requires = ["uv_build>=0.13.6,<0.14"]
+build-backend = "uv_build"
+
+[project]
+name = "pollenformer-uco"
+version = "0.1.0"
+description = "Pollen grain classification with DINOv2, a 128-D embedding and cosine k-NN inference."
+readme = "README.md"
+requires-python = ">=3.13"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ricardo Espantaleón-Pérez" }]
+keywords = [
+    "aerobiology",
+    "computer-vision",
+    "dinov2",
+    "k-nearest-neighbors",
+    "metric-learning",
+    "pollen",
+    "vision-transformer",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "numpy>=2.2.6",
+    "pillow>=10.0.0",
+    "pydantic>=2.11.7",
+    "torch>=2.7.1",
+    "torchvision>=0.22.1",
+]
+
+[project.optional-dependencies]
+# The Streamlit demo in demo/ (deployed to Hugging Face Spaces).
+demo = ["altair>=5.5.0", "pandas>=2.2.3", "streamlit>=1.49.1"]
+
+[project.scripts]
+pollenformer = "pollenformer.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/AVAuco/pollenformerUCO"
+Repository = "https://github.com/AVAuco/pollenformerUCO"
+Issues = "https://github.com/AVAuco/pollenformerUCO/issues"
+Paper = "https://doi.org/10.1016/j.atmosenv.2026.122455"
+Demo = "https://richardesp-pollenformer-uco-demo.hf.space/"
+
+[dependency-groups]
+# Keep ruff in sync with the ruff-pre-commit rev in .pre-commit-config.yaml.
+lint = ["import-linter>=2.15", "ruff==0.17.3"]
+test = ["pytest>=9.2.0", "pytest-cov>=7.1.0"]
+dev = [{ include-group = "lint" }, { include-group = "test" }]
+
+[tool.uv]
+# Same uv as mise.toml, so every machine resolves and installs alike.
+required-version = ">=0.13.6,<0.14"
+
+[tool.uv.build-backend]
+# The distribution is `pollenformer-uco`; the import package is `pollenformer`.
+module-name = "pollenformer"
+
+# CPU-only PyTorch wheels on Linux (Docker, Hugging Face Spaces, CI) instead of the default
+# CUDA build, which saves several GB. macOS keeps resolving torch from PyPI.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+# ---------------------------------------------------------------------------------------------
+# Ruff: formatting and lint. One maximum line length for code, strings and comments alike.
+# ---------------------------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+src = ["src", "demo", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors, including E501 (line length)
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "D",   # pydocstyle (Google convention)
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "C90", # mccabe complexity
+    "S",   # flake8-bandit (security)
+    "SIM", # flake8-simplify
+    "PT",  # flake8-pytest-style
+    "T20", # no print(): use logging, or sys.stdout in CLIs
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    # Keep idiomatic PyTorch aliases such as `torch.nn.functional as F`.
+    "N812",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "D",    # test names describe the behaviour
+    "S101", # pytest relies on assert
+]
+"scripts/**" = [
+    "T201", # command-line scripts report progress with print()
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+known-first-party = ["pollenformer", "ui"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# ---------------------------------------------------------------------------------------------
+# import-linter: architecture contracts. A layer may only import the layers below it, which
+# rules out circular imports between modules.
+# ---------------------------------------------------------------------------------------------
+[tool.importlinter]
+root_package = "pollenformer"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layered architecture, no import cycles"
+type = "layers"
+layers = [
+    "pollenformer.cli",
+    "pollenformer.pipeline",
+    "pollenformer.inference",
+    "pollenformer.model | pollenformer.gallery | pollenformer.artifacts | pollenformer.imaging",
+    "pollenformer.config | pollenformer.schemas",
+]
+
+[[tool.importlinter.contracts]]
+name = "The package does not depend on the demo UI"
+type = "forbidden"
+source_modules = ["pollenformer"]
+forbidden_modules = ["streamlit", "altair", "pandas"]
+
+# ---------------------------------------------------------------------------------------------
+# pytest and coverage
+# ---------------------------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+# demo/ for the Streamlit `ui` package, tests/ for the shared `helpers` module.
+pythonpath = ["demo", "tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
+xfail_strict = true
+markers = [
+    "artifacts: needs the released model and gallery (set POLLENFORMER_ARTIFACTS=1 to run)",
+]
+filterwarnings = [
+    "error",
+    # DINOv2 hub code warns when the optional xFormers kernels are absent.
+    "ignore:xFormers is not available:UserWarning",
+]
+
+[tool.coverage.run]
+source = ["pollenformer"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+exclude_also = ["if __name__ == .__main__.:", "\\.\\.\\."]
