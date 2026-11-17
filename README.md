@@ -7,6 +7,7 @@
 #### A systematic backbone benchmark on **UCOPollen**
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Hugging_Face_Space-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://richardesp-pollenformer-uco-demo.hf.space/)
+[![Model](https://img.shields.io/badge/Model-Hugging_Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/richardesp/PollenFormerUCO)
 [![Paper](https://img.shields.io/badge/Paper-Atmospheric_Environment-9cf?style=for-the-badge)](https://doi.org/10.1016/j.atmosenv.2026.122455)
 [![License](https://img.shields.io/badge/License-MIT-3da639?style=for-the-badge)](#-license)
 
@@ -55,8 +56,8 @@ In the demo you can:
 - 🏷️ Get the **predicted pollen taxon** with a confidence indicator.
 - 🤝 Inspect the **top-k nearest neighbours** (with cosine similarity) used for k-NN inference.
 
-> 📦 The Space hosts the online demo only. The code lives in this repository, which also releases the
-> trained weights and the k-NN reference gallery: see [Code, weights & dataset](#-code-weights--dataset).
+> 📦 The Space hosts the online demo only. The code lives in this repository, and the trained weights and
+> k-NN reference gallery are versioned on [Hugging Face](https://huggingface.co/richardesp/PollenFormerUCO): see [Code, weights & dataset](#-code-weights--dataset).
 
 ---
 
@@ -180,14 +181,14 @@ For the supporting evidence and full discussion, read the
 This GitHub repository is the official home of PollenFormerUCO. The release is organised so that a
 researcher can clone the project and run a real prediction without training the model from scratch.
 
-| Component                                             | Where                                                                    | Status            |
-| ----------------------------------------------------- | ------------------------------------------------------------------------ | ----------------- |
-| Model, k-NN inference and command line                | [`src/pollenformer/`](src/pollenformer)                                  | ✅ Available      |
-| Streamlit demo (deployed to the Space)                | [`demo/`](demo)                                                          | ✅ Available      |
-| Trained weights and k-NN gallery (embeddings, labels) | Release `v0.1.0`, checked by SHA-256 on download                         | ⏳ Pending upload |
-| Training and evaluation code                          | This repository                                                          | ⏳ Pending        |
-| UCOPollen dataset                                     | Released with its own license                                            | ⏳ Pending        |
-| Live demo                                             | [Hugging Face Space](https://richardesp-pollenformer-uco-demo.hf.space/) | ✅ Available      |
+| Component                                             | Where                                                                                                                            | Status       |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| Model, k-NN inference and command line                | [`src/pollenformer/`](src/pollenformer)                                                                                          | ✅ Available |
+| Streamlit demo (deployed to the Space)                | [`demo/`](demo)                                                                                                                  | ✅ Available |
+| Trained weights and k-NN gallery (embeddings, labels) | [Hugging Face model repository](https://huggingface.co/richardesp/PollenFormerUCO), tag `v0.1.0`, checked by SHA-256 on download | ✅ Available |
+| Training and evaluation code                          | This repository                                                                                                                  | ⏳ Pending   |
+| UCOPollen dataset                                     | Released with its own license                                                                                                    | ⏳ Pending   |
+| Live demo                                             | [Hugging Face Space](https://richardesp-pollenformer-uco-demo.hf.space/)                                                         | ✅ Available |
 
 Links will be added here as each component is released.
 
@@ -202,7 +203,7 @@ provides the Python version in [`.python-version`](.python-version) and the lock
 git clone https://github.com/AVAuco/pollenformerUCO && cd pollenformerUCO
 mise trust && mise install  # pinned tools: uv and gitleaks
 mise run setup:uv-env       # .venv from uv.lock, plus the git hooks
-mise run artifacts:fetch    # model + gallery, verified by SHA-256 (~365 MB, cached)
+mise run artifacts:fetch    # model + gallery from Hugging Face, verified by SHA-256 (~365 MB)
 
 uv run pollenformer predict demo/demo_samples/castanea.png   # JSON: taxon + neighbours
 mise run app:demo:soft      # Streamlit demo on localhost:8501 (app:demo:hard: expert mode)

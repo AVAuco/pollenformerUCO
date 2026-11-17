@@ -1,9 +1,10 @@
-"""Versioned model artifacts: the checkpoint and k-NN gallery of each release.
+"""Versioned model artifacts: the checkpoint and the k-NN gallery computed with it.
 
-Files are downloaded once into a local cache and checked against their SHA-256 before
-use, so a fresh clone can run a real prediction without training anything. An
-environment variable per artifact (``MODEL_PATH``, ``INDEX_PATH``, ...) points to an
-existing local copy instead.
+They live in the Hugging Face model repository :data:`ARTIFACTS_REPO_ID`, pinned to the
+tag :data:`ARTIFACTS_REVISION`. Files are downloaded once into a local cache and checked
+against their SHA-256 before use, so a fresh clone can run a real prediction without
+training anything. An environment variable per artifact (``MODEL_PATH``,
+``INDEX_PATH``, ...) points to an existing local copy instead.
 """
 
 from __future__ import annotations
@@ -21,11 +22,12 @@ from pollenformer.config import env_path
 
 logger = logging.getLogger(__name__)
 
-#: Release whose assets hold the artifacts below. Bump it together with the checksums.
-ARTIFACTS_RELEASE = "v0.1.0"
-DEFAULT_BASE_URL = (
-    f"https://github.com/AVAuco/pollenformerUCO/releases/download/{ARTIFACTS_RELEASE}"
-)
+#: Hugging Face model repository that holds the artifacts below.
+ARTIFACTS_REPO_ID = "richardesp/PollenFormerUCO"
+ARTIFACTS_REPO_URL = f"https://huggingface.co/{ARTIFACTS_REPO_ID}"
+#: Tag of that repository whose files match the checksums below. Bump them together.
+ARTIFACTS_REVISION = "v0.1.0"
+DEFAULT_BASE_URL = f"{ARTIFACTS_REPO_URL}/resolve/{ARTIFACTS_REVISION}"
 _ALLOWED_SCHEMES = ("https://", "file://")
 _CHUNK_BYTES = 1 << 20
 
@@ -73,16 +75,16 @@ ALL_ARTIFACTS = (MODEL, GALLERY_INDEX, GALLERY_META, GALLERY_UMAP)
 
 
 def cache_dir() -> Path:
-    """Return the directory that holds downloaded artifacts for the current release.
+    """Return the directory that holds downloaded artifacts for the current revision.
 
     Returns:
-        ``$POLLENFORMER_HOME/<release>``, defaulting to
-        ``~/.cache/pollenformer/<release>``.
+        ``$POLLENFORMER_HOME/<revision>``, defaulting to
+        ``~/.cache/pollenformer/<revision>``.
     """
     default_root = (
         Path(os.getenv("XDG_CACHE_HOME") or Path.home() / ".cache") / "pollenformer"
     )
-    return env_path("POLLENFORMER_HOME", default_root) / ARTIFACTS_RELEASE
+    return env_path("POLLENFORMER_HOME", default_root) / ARTIFACTS_REVISION
 
 
 def thumbs_dir() -> Path:
@@ -117,8 +119,9 @@ def fetch(
 
     Args:
         artifact: The artifact to fetch.
-        base_url: Location of the release assets. Defaults to ``POLLENFORMER_BASE_URL``
-            or :data:`DEFAULT_BASE_URL`. Only ``https://`` and ``file://`` are accepted.
+        base_url: URL of the folder that holds the artifact files. Defaults to
+            ``POLLENFORMER_BASE_URL``, then :data:`DEFAULT_BASE_URL`. Only ``https://``
+            and ``file://`` are accepted.
         dest_dir: Cache directory. Defaults to :func:`cache_dir`.
 
     Returns:

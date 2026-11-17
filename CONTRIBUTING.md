@@ -137,13 +137,19 @@ Each tool reads its own configuration, so a rule is changed in one place:
 
 ## Model artifacts
 
-The trained weights and the k-NN gallery are release assets, not files in git. To
-publish new ones:
+The trained weights and the k-NN gallery are not files in this repository. They live
+in the Hugging Face model repository
+[`richardesp/PollenFormerUCO`](https://huggingface.co/richardesp/PollenFormerUCO),
+and each version is a tag there. To publish new ones:
 
-1. Attach the files to a new GitHub release.
-2. In [`artifacts.py`](src/pollenformer/artifacts.py), update `ARTIFACTS_RELEASE` and
-   the SHA-256 of each file (`shasum -a 256 FILE`), in the same pull request.
-3. Run `mise run test:e2e` against the new files.
+1. Push the files and the updated model card to that repository, then tag the commit,
+   for example `v0.2.0`. The gallery and its UMAP must be computed with the new
+   checkpoint.
+2. In [`artifacts.py`](src/pollenformer/artifacts.py), set `ARTIFACTS_REVISION` to
+   the new tag and update the SHA-256 of each file (`shasum -a 256 FILE`), in the same
+   pull request.
+3. Run `POLLENFORMER_HOME="$(mktemp -d)" mise run test:e2e`. The empty cache makes the
+   tests download the new files from the tag.
 
 ## License
 

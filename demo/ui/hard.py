@@ -6,7 +6,12 @@ from dataclasses import dataclass
 
 import streamlit as st
 
-from pollenformer.artifacts import ARTIFACTS_RELEASE, cache_dir
+from pollenformer.artifacts import (
+    ARTIFACTS_REPO_ID,
+    ARTIFACTS_REPO_URL,
+    ARTIFACTS_REVISION,
+    cache_dir,
+)
 from pollenformer.config import DEVICE, EMB_DIM, INPUT_SIZE, NUM_CLASSES
 from pollenformer.pipeline import HeadFuse, run_attention
 from ui.common import (
@@ -85,7 +90,10 @@ def _render_sidebar() -> Settings:
         st.subheader("Runtime & Metadata")
         st.caption(f"⚙️ Device: **{DEVICE}**")
         st.caption("🗂️ Gallery: **UCOPollen train split** (k-NN index)")
-        st.caption(f"📦 Artifacts: **{ARTIFACTS_RELEASE}** · `{cache_dir()}`")
+        st.caption(
+            f"📦 Artifacts: [{ARTIFACTS_REPO_ID}@{ARTIFACTS_REVISION}]"
+            f"({ARTIFACTS_REPO_URL}/tree/{ARTIFACTS_REVISION}) · `{cache_dir()}`"
+        )
         st.caption(
             f"Input size (C,H,W): {INPUT_SIZE} · classes={NUM_CLASSES} · "
             f"emb_dim={EMB_DIM}"
