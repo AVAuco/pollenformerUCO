@@ -1,4 +1,4 @@
-"""PollenFormerUCO network: a DINOv2 backbone, a projection embedding and a linear classifier."""
+"""PollenFormerUCO network: DINOv2 backbone, projection embedding, classifier."""
 
 from __future__ import annotations
 
@@ -16,7 +16,8 @@ from pollenformer.config import DEVICE, EMB_DIM, NUM_CLASSES
 
 logger = logging.getLogger(__name__)
 
-#: DINOv2 hub code pinned to a commit: ``torch.hub`` runs this repository's Python at load time.
+#: DINOv2 hub code pinned to a commit: ``torch.hub`` runs this repository's Python at
+#: load time.
 DINOV2_HUB_REPO = "facebookresearch/dinov2:7764ea0f912e53c92e82eb78a2a1631e92725fc8"
 
 DinoVariant = Literal["vitb14", "vits14"]
@@ -25,7 +26,7 @@ FEATURE_DIMS: dict[str, int] = {"vitb14": 768, "vits14": 384}
 
 
 class DinoClassifierWithEmbeddings(nn.Module):
-    """DINOv2 backbone whose CLS token feeds a projection embedding and a linear classifier."""
+    """DINOv2 backbone whose CLS token feeds a projection and a linear classifier."""
 
     def __init__(
         self,
@@ -41,7 +42,8 @@ class DinoClassifierWithEmbeddings(nn.Module):
             backbone: Module whose ``forward_features`` returns ``x_norm_clstoken``.
             num_classes: Number of output classes.
             feat_dim: Width of the backbone CLS token.
-            emb_dim: Projection size; ``None`` or ``feat_dim`` keeps the CLS token as is.
+            emb_dim: Projection size; ``None`` or ``feat_dim`` keeps the CLS token
+                as is.
             freeze_backbone: Disable gradients for the backbone parameters.
         """
         super().__init__()
@@ -68,7 +70,8 @@ class DinoClassifierWithEmbeddings(nn.Module):
             x: ``(B, 3, H, W)`` normalized images.
 
         Returns:
-            ``(logits, embeddings)`` of shapes ``(B, num_classes)`` and ``(B, emb_dim)``.
+            ``(logits, embeddings)`` of shapes ``(B, num_classes)`` and ``(B,
+            emb_dim)``.
         """
         cls_token = self.backbone.forward_features(x)["x_norm_clstoken"]
         emb = self.embedding_layer(cls_token)
@@ -84,7 +87,9 @@ class DinoClassifierWithEmbeddings(nn.Module):
         if num_blocks <= 0:
             return
         if num_blocks > len(blocks):
-            logger.warning("Unfreezing all %d blocks (requested %d)", len(blocks), num_blocks)
+            logger.warning(
+                "Unfreezing all %d blocks (requested %d)", len(blocks), num_blocks
+            )
             num_blocks = len(blocks)
         for block in blocks[-num_blocks:]:
             for param in block.parameters():
@@ -106,11 +111,13 @@ class DinoClassifierWithEmbeddings(nn.Module):
         return hook
 
     def register_attn_hooks(self) -> None:
-        """Capture the attention map of every backbone block on the next forward pass."""
+        """Capture every backbone block's attention map on the next forward pass."""
         self.remove_attn_hooks()
         self._attn_feats = []
         for block in self.backbone.blocks:
-            self._attn_hooks.append(block.attn.register_forward_hook(self._attention_hook()))
+            self._attn_hooks.append(
+                block.attn.register_forward_hook(self._attention_hook())
+            )
 
     def remove_attn_hooks(self) -> None:
         """Remove the attention hooks registered by :meth:`register_attn_hooks`."""
@@ -119,7 +126,7 @@ class DinoClassifierWithEmbeddings(nn.Module):
         self._attn_hooks = []
 
     def get_attn_maps(self) -> list[torch.Tensor]:
-        """Return the ``(B, heads, N, N)`` attention maps captured by the last forward pass."""
+        """Return the ``(B, heads, N, N)`` attention maps of the last forward pass."""
         return self._attn_feats
 
 
@@ -142,8 +149,8 @@ def build_classifier(
     Returns:
         The classifier, on CPU, with a frozen backbone.
     """
-    # torch.hub prints its first-time download notice to stdout; keep stdout for program output
-    # (e.g. the JSON of `pollenformer predict`).
+    # torch.hub prints its first-time download notice to stdout; keep stdout for program
+    # output (e.g. the JSON of `pollenformer predict`).
     with contextlib.redirect_stdout(sys.stderr):
         backbone = torch.hub.load(
             DINOV2_HUB_REPO,
@@ -179,7 +186,9 @@ def load_model(
     """
     model = build_classifier(variant)
     # weights_only: never unpickle arbitrary objects from a downloaded file.
-    state_dict = torch.load(Path(checkpoint_path), map_location="cpu", weights_only=True)
+    state_dict = torch.load(
+        Path(checkpoint_path), map_location="cpu", weights_only=True
+    )
     model.load_state_dict(state_dict, strict=True)
     model = model.to(device)
     if device.type == "cuda":

@@ -1,9 +1,10 @@
 """UMAP embedding scatter: where a query lands among the gallery, in 2D.
 
-Reads the precomputed ``umap_xy.npz`` release artifact (built by ``scripts/build_umap.py``). The
-query is placed at the cosine-weighted mean of its nearest neighbours' coordinates, an
-*approximate* position that needs no ``umap-learn`` at runtime. If the projection cannot be
-loaded the panel shows a one-line hint instead of failing.
+Reads the precomputed ``umap_xy.npz`` release artifact (built by
+``scripts/build_umap.py``). The query is placed at the cosine-weighted mean of its
+nearest neighbours' coordinates, an *approximate* position that needs no ``umap-learn``
+at runtime. If the projection cannot be loaded the panel shows a one-line hint instead
+of failing.
 """
 
 from __future__ import annotations
@@ -47,14 +48,17 @@ def gallery_plot_df(names: tuple[str, ...]) -> pd.DataFrame | None:
         names: Class name of each label id.
 
     Returns:
-        Columns ``x``, ``y`` and ``class``, or ``None`` if the projection is unavailable.
+        Columns ``x``, ``y`` and ``class``, or ``None`` if the projection is
+        unavailable.
     """
     loaded = load_gallery_xy()
     if loaded is None:
         return None
     xy, labels = loaded
     if xy.shape[0] > _MAX_POINTS:
-        keep = np.random.default_rng(0).choice(xy.shape[0], size=_MAX_POINTS, replace=False)
+        keep = np.random.default_rng(0).choice(
+            xy.shape[0], size=_MAX_POINTS, replace=False
+        )
         xy, labels = xy[keep], labels[keep]
     label_names = [names[i] if 0 <= i < len(names) else str(i) for i in labels.tolist()]
     return pd.DataFrame({"x": xy[:, 0], "y": xy[:, 1], "class": label_names})
@@ -71,7 +75,9 @@ def query_position(xy: np.ndarray, resp: PredictResponse) -> tuple[float, float]
         ``(x, y)``, or ``None`` when no neighbour falls inside the projection.
     """
     keep = [
-        (n.index, max(n.cosine_similarity, 0.0)) for n in resp.neighbors if 0 <= n.index < len(xy)
+        (n.index, max(n.cosine_similarity, 0.0))
+        for n in resp.neighbors
+        if 0 <= n.index < len(xy)
     ]
     if not keep:
         return None
@@ -92,7 +98,10 @@ def render_embedding_scatter(resp: PredictResponse) -> None:
     loaded = load_gallery_xy()
     df = gallery_plot_df(class_names())
     if loaded is None or df is None:
-        st.info("Embedding map unavailable: the UMAP projection could not be loaded.", icon="🗺️")
+        st.info(
+            "Embedding map unavailable: the UMAP projection could not be loaded.",
+            icon="🗺️",
+        )
         return
     position = query_position(loaded[0], resp)
     if position is None:
@@ -110,14 +119,21 @@ def render_embedding_scatter(resp: PredictResponse) -> None:
         )
     )
     query = (
-        alt.Chart(pd.DataFrame({"x": [position[0]], "y": [position[1]], "label": ["query"]}))
+        alt.Chart(
+            pd.DataFrame({"x": [position[0]], "y": [position[1]], "label": ["query"]})
+        )
         .mark_point(
-            shape="diamond", size=300, color="black", filled=True, stroke="white", strokeWidth=1.5
+            shape="diamond",
+            size=300,
+            color="black",
+            filled=True,
+            stroke="white",
+            strokeWidth=1.5,
         )
         .encode(x="x:Q", y="y:Q", tooltip=["label"])
     )
     st.altair_chart((gallery + query).properties(height=440), width="stretch")
     st.caption(
-        "UMAP of the 128-D gallery (cosine). ◆ marks the query's **approximate** position "
-        "(cosine-weighted mean of its nearest neighbours)."
+        "UMAP of the 128-D gallery (cosine). ◆ marks the query's **approximate** "
+        "position (cosine-weighted mean of its nearest neighbours)."
     )

@@ -1,7 +1,7 @@
 """Result panels: prediction card, neighbours, vote breakdown and model card.
 
-They turn a ``PredictResponse`` into a readable view of the model's reasoning. The k-NN vote is
-recomputed from ``response.neighbors`` with the same rule as
+They turn a ``PredictResponse`` into a readable view of the model's reasoning. The k-NN
+vote is recomputed from ``response.neighbors`` with the same rule as
 ``pollenformer.inference.knn_predict``, so the pipeline needs no extra outputs.
 """
 
@@ -29,14 +29,18 @@ from ui.samples import gallery_thumb_path
 PRIMARY = "#264796"
 
 BIBTEX = r"""@article{EspantaleonPerez2027PollenFormerUCO,
-  author  = {Espantale{\'o}n-P{\'e}rez, Ricardo and Farooq, Qasim and L{\'o}pez-Orozco, Roc{\'i}o and Gonz{\'a}lez-Alonso, M{\'o}nica and Alashhab, Samer and Oteros, Jose and Buters, Jeroen and Gal{\'a}n, Carmen and Mar{\'i}n-Jim{\'e}nez, Manuel J.},
-  title   = {{Vision Transformers} for pollen grains classification: A systematic backbone benchmark on {UCOPollen}},
+  author  = {Espantale{\'o}n-P{\'e}rez, Ricardo and Farooq, Qasim and
+             L{\'o}pez-Orozco, Roc{\'i}o and Gonz{\'a}lez-Alonso, M{\'o}nica and
+             Alashhab, Samer and Oteros, Jose and Buters, Jeroen and
+             Gal{\'a}n, Carmen and Mar{\'i}n-Jim{\'e}nez, Manuel J.},
+  title   = {{Vision Transformers} for pollen grains classification:
+             A systematic backbone benchmark on {UCOPollen}},
   journal = {Atmospheric Environment},
   volume  = {389},
   pages   = {122455},
   year    = {2027},
   doi     = {10.1016/j.atmosenv.2026.122455}
-}"""  # noqa: E501 - BibTeX fields are kept on one line, as in the paper repository README
+}"""
 
 VoteRow = tuple[str, float, float, int]
 
@@ -65,13 +69,15 @@ def compute_vote_breakdown(
         scores[neighbor.label_name] = scores.get(neighbor.label_name, 0.0) + weight
         counts[neighbor.label_name] = counts.get(neighbor.label_name, 0) + 1
     total = sum(scores.values()) or 1.0
-    rows = [(name, score, score / total, counts[name]) for name, score in scores.items()]
+    rows = [
+        (name, score, score / total, counts[name]) for name, score in scores.items()
+    ]
     rows.sort(key=lambda row: row[1], reverse=True)
     return rows
 
 
 def similarity_confidence(top_cos: float) -> tuple[str, str]:
-    """Grade a query by its best neighbour's cosine similarity (traffic-light semaphore).
+    """Grade a query by its best neighbour's cosine similarity (traffic light).
 
     A high vote share can be misleading when the nearest neighbour is still far away (an
     out-of-distribution image); this adds a purely similarity-based signal.
@@ -101,7 +107,9 @@ def render_prediction_card(
         elapsed: Inference time in seconds, if measured.
     """
     breakdown = compute_vote_breakdown(resp.neighbors, k_vote=k_vote, weighted=weighted)
-    winner = next((row for row in breakdown if row[0] == resp.pred_class_name), breakdown[0])
+    winner = next(
+        (row for row in breakdown if row[0] == resp.pred_class_name), breakdown[0]
+    )
     top_cos = max((n.cosine_similarity for n in resp.neighbors), default=0.0)
     sem_emoji, sem_label = similarity_confidence(top_cos)
 
@@ -119,8 +127,8 @@ def render_prediction_card(
             f"{sem_emoji} {sem_label}",
             help=(
                 f"Graded from the best neighbour cosine = {top_cos:.3f}. "
-                f"High >= {SIM_CONF_HIGH:.2f}, Moderate >= {SIM_CONF_LOW:.2f}, else Low "
-                "(the query may be out-of-distribution)."
+                f"High >= {SIM_CONF_HIGH:.2f}, Moderate >= {SIM_CONF_LOW:.2f}, "
+                "else Low (the query may be out-of-distribution)."
             ),
         )
         if elapsed is not None:
@@ -152,7 +160,11 @@ def render_vote_chart(breakdown: list[VoteRow]) -> None:
         .encode(
             x=alt.X("fraction:Q", axis=alt.Axis(format="%"), title="Vote share"),
             y=alt.Y("class:N", sort="-x", title=None),
-            tooltip=["class", alt.Tooltip("fraction:Q", format=".0%", title="share"), "count"],
+            tooltip=[
+                "class",
+                alt.Tooltip("fraction:Q", format=".0%", title="share"),
+                "count",
+            ],
         )
         .properties(height=max(80, 28 * len(df)))
     )
@@ -167,7 +179,11 @@ def render_neighbors(resp: PredictResponse, *, thumbs: bool = False) -> None:
         thumbs: Show each neighbour's gallery thumbnail when the pack is present.
     """
     for neighbor in resp.neighbors:
-        cols = iter(st.columns([1, 2, 5, 4] if thumbs else [1, 6, 4], vertical_alignment="center"))
+        cols = iter(
+            st.columns(
+                [1, 2, 5, 4] if thumbs else [1, 6, 4], vertical_alignment="center"
+            )
+        )
         next(cols).markdown(f"**#{neighbor.rank}**")
         if thumbs:
             path = gallery_thumb_path(neighbor.index)
@@ -177,14 +193,19 @@ def render_neighbors(resp: PredictResponse, *, thumbs: bool = False) -> None:
             else:
                 col.caption("—")
         is_match = neighbor.label_name == resp.pred_class_name
-        next(cols).markdown(f"✅ **{neighbor.label_name}**" if is_match else neighbor.label_name)
+        next(cols).markdown(
+            f"✅ **{neighbor.label_name}**" if is_match else neighbor.label_name
+        )
         bar = min(max(neighbor.cosine_similarity, 0.0), 1.0)
         next(cols).progress(bar, text=f"cos {neighbor.cosine_similarity:.3f}")
 
 
 def render_how_it_works() -> None:
     """Render a one-line pipeline strip that orients first-time viewers."""
-    st.caption("🖼️ Image → 🧠 DINOv2-ViT-B → 📐 128-D embedding → 🔍 cosine k-NN → 🗳️ vote → 🏷️ taxon")
+    st.caption(
+        "🖼️ Image → 🧠 DINOv2-ViT-B → 📐 128-D embedding → "
+        "🔍 cosine k-NN → 🗳️ vote → 🏷️ taxon"
+    )
 
 
 def render_model_card() -> None:

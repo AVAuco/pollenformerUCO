@@ -9,7 +9,16 @@ import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
 import torch
 
-ImageInput = Image.Image | bytes | bytearray | memoryview | str | Path | np.ndarray | torch.Tensor
+ImageInput = (
+    Image.Image
+    | bytes
+    | bytearray
+    | memoryview
+    | str
+    | Path
+    | np.ndarray
+    | torch.Tensor
+)
 
 
 def load_image_bytes(data: bytes) -> Image.Image:

@@ -1,7 +1,7 @@
 """Streamlit entry point of the PollenFormerUCO demo: ``streamlit run demo/main.py``.
 
-The UI mode comes from ``--mode`` (``streamlit run demo/main.py -- --mode HARD``), then the
-``UI_MODE`` environment variable, then defaults to the public-facing ``SOFT`` mode.
+The UI mode comes from ``--mode`` (``streamlit run demo/main.py -- --mode HARD``), then
+the ``UI_MODE`` environment variable, then defaults to the public-facing ``SOFT`` mode.
 """
 
 from __future__ import annotations
@@ -28,13 +28,16 @@ def resolve_mode(argv: Sequence[str] | None = None) -> str:
     """Return the UI mode: ``--mode`` wins, then ``UI_MODE``, then ``SOFT``.
 
     Args:
-        argv: Arguments to parse; defaults to ``sys.argv[1:]``. Unknown ones are ignored.
+        argv: Arguments to parse; defaults to ``sys.argv[1:]``. Unknown ones
+            are ignored.
 
     Returns:
         ``"SOFT"`` or ``"HARD"``.
     """
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--mode", type=str.upper, choices=["HARD", "SOFT"], default=None)
+    parser.add_argument(
+        "--mode", type=str.upper, choices=["HARD", "SOFT"], default=None
+    )
     args, _ = parser.parse_known_args(argv)
     mode = (args.mode or os.getenv("UI_MODE") or "SOFT").upper()
     return mode if mode in {"HARD", "SOFT"} else "SOFT"
@@ -51,8 +54,9 @@ def main() -> None:
 
     st.title("🔬 PollenFormerUCO · Pollen Image Classifier")
     st.write(
-        "Upload a microscopy image and get pollen taxon predictions from PollenFormerUCO "
-        "(DINOv2-ViT Base + hybrid CE/Triplet loss, 128-D embedding, k-NN inference)."
+        "Upload a microscopy image and get pollen taxon predictions from "
+        "PollenFormerUCO (DINOv2-ViT Base + hybrid CE/Triplet loss, 128-D "
+        "embedding, k-NN inference)."
     )
 
     if mode == "HARD":

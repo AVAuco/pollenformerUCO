@@ -58,7 +58,9 @@ class Neighbor(BaseModel):
     rank: PositiveInt = Field(..., description="1-based neighbor rank")
     index: int = Field(..., description="Index of the neighbor in the database")
     label_id: int = Field(..., description="Numeric class ID of the neighbor")
-    label_name: str = Field(..., description="Human-readable class name of the neighbor")
+    label_name: str = Field(
+        ..., description="Human-readable class name of the neighbor"
+    )
     cosine_similarity: float = Field(
         ..., ge=-1.0, le=1.0, description="Cosine similarity with query embedding"
     )

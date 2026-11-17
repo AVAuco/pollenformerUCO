@@ -1,8 +1,9 @@
-"""Versioned model artifacts: the checkpoint and the k-NN gallery published with each release.
+"""Versioned model artifacts: the checkpoint and k-NN gallery of each release.
 
-Files are downloaded once into a local cache and checked against their SHA-256 before use, so a
-fresh clone can run a real prediction without training anything. An environment variable per
-artifact (``MODEL_PATH``, ``INDEX_PATH``, ...) points to an existing local copy instead.
+Files are downloaded once into a local cache and checked against their SHA-256 before
+use, so a fresh clone can run a real prediction without training anything. An
+environment variable per artifact (``MODEL_PATH``, ``INDEX_PATH``, ...) points to an
+existing local copy instead.
 """
 
 from __future__ import annotations
@@ -30,7 +31,7 @@ _CHUNK_BYTES = 1 << 20
 
 
 class ArtifactError(RuntimeError):
-    """Raised when an artifact is missing, cannot be downloaded or fails verification."""
+    """Raised when an artifact is missing, cannot be downloaded or is corrupt."""
 
 
 @dataclass(frozen=True)
@@ -75,9 +76,12 @@ def cache_dir() -> Path:
     """Return the directory that holds downloaded artifacts for the current release.
 
     Returns:
-        ``$POLLENFORMER_HOME/<release>``, defaulting to ``~/.cache/pollenformer/<release>``.
+        ``$POLLENFORMER_HOME/<release>``, defaulting to
+        ``~/.cache/pollenformer/<release>``.
     """
-    default_root = Path(os.getenv("XDG_CACHE_HOME") or Path.home() / ".cache") / "pollenformer"
+    default_root = (
+        Path(os.getenv("XDG_CACHE_HOME") or Path.home() / ".cache") / "pollenformer"
+    )
     return env_path("POLLENFORMER_HOME", default_root) / ARTIFACTS_RELEASE
 
 
@@ -106,35 +110,41 @@ def sha256sum(path: Path) -> str:
     return digest.hexdigest()
 
 
-def fetch(artifact: Artifact, *, base_url: str | None = None, dest_dir: Path | None = None) -> Path:
+def fetch(
+    artifact: Artifact, *, base_url: str | None = None, dest_dir: Path | None = None
+) -> Path:
     """Return a verified local copy of an artifact, downloading it when needed.
 
     Args:
         artifact: The artifact to fetch.
-        base_url: Location of the release assets. Defaults to ``POLLENFORMER_BASE_URL`` or
-            :data:`DEFAULT_BASE_URL`. Only ``https://`` and ``file://`` are accepted.
+        base_url: Location of the release assets. Defaults to ``POLLENFORMER_BASE_URL``
+            or :data:`DEFAULT_BASE_URL`. Only ``https://`` and ``file://`` are accepted.
         dest_dir: Cache directory. Defaults to :func:`cache_dir`.
 
     Returns:
         Path to the verified file.
 
     Raises:
-        ArtifactError: If the URL scheme is not allowed, the download fails or the checksum
-            does not match.
+        ArtifactError: If the URL scheme is not allowed, the download fails or the
+            checksum does not match.
     """
     target_dir = Path(dest_dir) if dest_dir is not None else cache_dir()
     target = target_dir / artifact.filename
     if target.is_file() and sha256sum(target) == artifact.sha256:
         return target
 
-    base = (base_url or os.getenv("POLLENFORMER_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
+    base = (base_url or os.getenv("POLLENFORMER_BASE_URL") or DEFAULT_BASE_URL).rstrip(
+        "/"
+    )
     url = f"{base}/{artifact.filename}"
     if not url.startswith(_ALLOWED_SCHEMES):
         raise ArtifactError(f"Refusing to download from {url}: use https:// or file://")
 
     target_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Downloading %s from %s", artifact.filename, url)
-    with tempfile.NamedTemporaryFile(dir=target_dir, suffix=".part", delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(
+        dir=target_dir, suffix=".part", delete=False
+    ) as tmp:
         tmp_path = Path(tmp.name)
         try:
             # The scheme is restricted to https/file just above.
@@ -148,7 +158,8 @@ def fetch(artifact: Artifact, *, base_url: str | None = None, dest_dir: Path | N
     if digest != artifact.sha256:
         tmp_path.unlink(missing_ok=True)
         raise ArtifactError(
-            f"Checksum mismatch for {artifact.filename}: expected {artifact.sha256}, got {digest}"
+            f"Checksum mismatch for {artifact.filename}: "
+            f"expected {artifact.sha256}, got {digest}"
         )
     tmp_path.replace(target)
     return target
@@ -161,7 +172,8 @@ def resolve(artifact: Artifact) -> Path:
         artifact: The artifact to locate.
 
     Returns:
-        The path in the artifact's environment variable if set, else the verified download.
+        The path in the artifact's environment variable if set, else the verified
+        download.
 
     Raises:
         ArtifactError: If the override points to a missing file, or the download fails.

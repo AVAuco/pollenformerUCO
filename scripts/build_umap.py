@@ -1,9 +1,10 @@
 """Build the 2D UMAP projection consumed by the demo's embedding scatter.
 
-Reads the k-NN gallery (embeddings + labels), fits a cosine UMAP down to two dimensions and
-writes ``umap_xy.npz`` (``xy`` + ``labels``, no pickled objects). It is a build-time tool that
-depends only on numpy and umap-learn, so it runs in an isolated environment
-(``mise run assets:umap -- --index ... --out ...``); umap-learn is never a runtime dependency.
+Reads the k-NN gallery (embeddings + labels), fits a cosine UMAP down to two dimensions
+and writes ``umap_xy.npz`` (``xy`` + ``labels``, no pickled objects). It is a build-time
+tool that depends only on numpy and umap-learn, so it runs in an isolated environment
+(``mise run assets:umap -- --index ... --out ...``); umap-learn is never a runtime
+dependency.
 """
 
 from __future__ import annotations
@@ -16,7 +17,9 @@ import numpy as np
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--index", type=Path, required=True, help="Gallery hyb128_index.npz.")
+    parser.add_argument(
+        "--index", type=Path, required=True, help="Gallery hyb128_index.npz."
+    )
     parser.add_argument("--out", type=Path, required=True, help="Output umap_xy.npz.")
     parser.add_argument("--n-neighbors", type=int, default=30)
     parser.add_argument("--min-dist", type=float, default=0.1)

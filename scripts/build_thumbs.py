@@ -1,13 +1,13 @@
-"""Build the optional gallery-thumbnail pack shown next to each nearest neighbour in the demo.
+"""Build the optional thumbnails shown next to each nearest neighbour in the demo.
 
-The UCOPollen images are not distributed with the model, so this script makes a downsized
-thumbnail per gallery index from a local copy of the dataset:
+The UCOPollen images are not distributed with the model, so this script makes a
+downsized thumbnail per gallery index from a local copy of the dataset:
 
     mise run assets:thumbs -- --images-root /path/to/UCOPollen
 
-It reads each index's source path from the gallery metadata and writes ``{index}.jpg`` into the
-thumbnails directory. The demo shows them once that directory exists; without it the neighbour
-panel shows rank, class and similarity only.
+It reads each index's source path from the gallery metadata and writes ``{index}.jpg``
+into the thumbnails directory. The demo shows them once that directory exists; without
+it the neighbour panel shows rank, class and similarity only.
 """
 
 from __future__ import annotations
@@ -29,9 +29,15 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Root that the metadata's relative paths are resolved against.",
     )
-    parser.add_argument("--meta", type=Path, default=None, help="Default: the release artifact.")
-    parser.add_argument("--out", type=Path, default=None, help="Default: artifacts.thumbs_dir().")
-    parser.add_argument("--size", type=int, default=96, help="Thumbnail edge in pixels.")
+    parser.add_argument(
+        "--meta", type=Path, default=None, help="Default: the release artifact."
+    )
+    parser.add_argument(
+        "--out", type=Path, default=None, help="Default: artifacts.thumbs_dir()."
+    )
+    parser.add_argument(
+        "--size", type=int, default=96, help="Thumbnail edge in pixels."
+    )
     return parser.parse_args()
 
 
@@ -40,7 +46,9 @@ def main() -> None:
     args = _parse_args()
     meta_path = args.meta or artifacts.resolve(artifacts.GALLERY_META)
     out = args.out or artifacts.thumbs_dir()
-    paths: list[str] | None = json.loads(meta_path.read_text(encoding="utf-8")).get("paths")
+    paths: list[str] | None = json.loads(meta_path.read_text(encoding="utf-8")).get(
+        "paths"
+    )
     if not paths:
         raise SystemExit(f"No 'paths' in {meta_path}; cannot build thumbnails.")
 

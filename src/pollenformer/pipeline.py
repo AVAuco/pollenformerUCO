@@ -1,7 +1,7 @@
 """End-to-end prediction and attention maps.
 
-The model and the gallery are loaded on first use and then reused, so importing this module
-needs neither the network nor the artifacts.
+The model and the gallery are loaded on first use and then reused, so importing this
+module needs neither the network nor the artifacts.
 """
 
 from __future__ import annotations
@@ -17,7 +17,13 @@ import torch.nn.functional as F
 from torchvision import transforms
 
 from pollenformer import artifacts
-from pollenformer.config import DEVICE, IMAGENET_MEAN, IMAGENET_STD, INPUT_SIZE, mps_sync
+from pollenformer.config import (
+    DEVICE,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
+    INPUT_SIZE,
+    mps_sync,
+)
 from pollenformer.gallery import GalleryIndex, load_gallery_index
 from pollenformer.imaging import ImageInput, load_image_bytes, to_pil
 from pollenformer.inference import embed_image, knn_predict
@@ -62,7 +68,8 @@ def get_gallery() -> GalleryIndex:
         The reference embeddings with their labels and class names.
     """
     return load_gallery_index(
-        artifacts.resolve(artifacts.GALLERY_INDEX), artifacts.resolve(artifacts.GALLERY_META)
+        artifacts.resolve(artifacts.GALLERY_INDEX),
+        artifacts.resolve(artifacts.GALLERY_META),
     )
 
 
@@ -76,7 +83,9 @@ def safe_normalize(vec: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     Returns:
         A float32 unit vector, or zeros.
     """
-    vec = np.nan_to_num(np.asarray(vec, dtype=np.float32), nan=0.0, posinf=0.0, neginf=0.0)
+    vec = np.nan_to_num(
+        np.asarray(vec, dtype=np.float32), nan=0.0, posinf=0.0, neginf=0.0
+    )
     norm = float(np.linalg.norm(vec))
     if not np.isfinite(norm) or norm < eps:
         return np.zeros_like(vec)
@@ -122,11 +131,13 @@ def predict_image(
     Args:
         image: Any input accepted by :func:`pollenformer.imaging.to_pil`.
         topk: Number of neighbours returned.
-        k_vote: Number of neighbours that vote; ``1`` is the setting reported in the paper.
+        k_vote: Number of neighbours that vote; ``1`` is the setting reported in
+            the paper.
         weighted: Weight votes by cosine similarity.
         model: Model to use; defaults to :func:`get_model`.
         gallery: Gallery to search; defaults to :func:`get_gallery`.
-        device: Device the model lives on; defaults to :data:`DEVICE` at call time.
+        device: Device the model lives on; defaults to :data:`DEVICE` at call
+            time.
 
     Returns:
         The predicted class and nearest neighbours.
@@ -166,7 +177,9 @@ def attention_transform(image: Image.Image) -> torch.Tensor:
     _, height, width = INPUT_SIZE
     tfm = transforms.Compose(
         [
-            transforms.Resize((height, width), interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.Resize(
+                (height, width), interpolation=transforms.InterpolationMode.BICUBIC
+            ),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
@@ -199,9 +212,12 @@ def compute_attention_map(
         head_fuse: ``"mean"``, ``"max"`` or the index of a single head.
 
     Returns:
-        The ``(H, W)`` attention in ``[0, 1]`` and the ``(H, W, 3)`` de-normalized input.
+        The ``(H, W)`` attention in ``[0, 1]`` and the ``(H, W, 3)`` de-normalized
+        input.
     """
-    input_tensor = attention_transform(to_pil(image)).unsqueeze(0).to(device, non_blocking=True)
+    input_tensor = (
+        attention_transform(to_pil(image)).unsqueeze(0).to(device, non_blocking=True)
+    )
 
     model.eval()
     model.register_attn_hooks()
@@ -211,7 +227,9 @@ def compute_attention_map(
     finally:
         model.remove_attn_hooks()
     if not attn_maps:
-        raise RuntimeError("No attention maps captured; check the hooks and forward path.")
+        raise RuntimeError(
+            "No attention maps captured; check the hooks and forward path."
+        )
 
     attn_last = attn_maps[-1]  # (B, heads, tokens, tokens)
     if attn_last.ndim != 4 or attn_last.size(0) != 1:
@@ -221,12 +239,16 @@ def compute_attention_map(
     grid_h = int(np.floor(np.sqrt(cls_patches.numel())))
     grid = cls_patches.reshape(1, 1, grid_h, cls_patches.numel() // grid_h)
     height, width = input_tensor.shape[-2:]
-    attn = F.interpolate(grid, size=(height, width), mode="bilinear", align_corners=False)
+    attn = F.interpolate(
+        grid, size=(height, width), mode="bilinear", align_corners=False
+    )
     attn_np = attn.squeeze().cpu().numpy().astype(np.float32)
     attn_np = (attn_np - attn_np.min()) / (attn_np.max() - attn_np.min() + 1e-12)
 
     img_np = input_tensor[0].cpu().permute(1, 2, 0).numpy().astype(np.float32)
-    img_np = np.clip(img_np * np.array(IMAGENET_STD) + np.array(IMAGENET_MEAN), 0.0, 1.0)
+    img_np = np.clip(
+        img_np * np.array(IMAGENET_STD) + np.array(IMAGENET_MEAN), 0.0, 1.0
+    )
     mps_sync(device)
     return {"attention": attn_np, "image": img_np.astype(np.float32)}
 
